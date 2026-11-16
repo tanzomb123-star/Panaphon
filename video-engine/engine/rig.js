@@ -185,6 +185,54 @@
     return lying ? { hx: 40 * s, hy: -60 * s - lift } : { hx: (hx - 30) * s, hy: (hy + 26) * s - lift };
   }
 
+
+  /* ================= bean figure: front-facing, round head, 2-bone limbs (the reference-sheet character model) ================= */
+  /* per side angles: 0 = hanging down, + = outward from the body. arms [shoulder, elbow], mirrored left/right */
+  const BEAN_ARMS = { idle: [0.22, 0.25], sad: [0.06, 0.05], sleep: [0.2, 0.2], hop: [2.2, 0.5], shock: [2.6, 0.3], happy: [1.25, 1.65], talk: [0.3, 0.3] };
+  function bean(c, ch, pose, t, P, g) {
+    const pd = POSE_DEFS[pose], F = ch.features, col = ch.colors, s = F.scale || 1, stick = F.body === 'stick';
+    const lift = liftOf(pd, t), run = pose === 'run', walking = pose === 'walk' || run, ph = t * (run ? 9 : 5.5);
+    g.E(0, 4, 44 * s, 7, 0, 'rgba(0,0,0,.18)', false);
+    c.save(); c.translate(0, -lift); c.scale(s, s);
+    if (pd.layout === 'lying') { c.translate(-80, -36); c.rotate(Math.PI / 2); }
+    const bob = walking ? Math.abs(Math.sin(ph)) * (run ? 6 : 3) : pose === 'idle' ? Math.sin(t * 2.2) * 1.2 : 0;
+    c.translate(0, -bob);
+    let [sh, el] = BEAN_ARMS[pose] || BEAN_ARMS.idle; let armL = [sh, el], armR = [sh, el];
+    if (walking) { const w = Math.sin(ph) * (run ? 0.55 : 0.25); armL = [0.25 + w, run ? 1.2 : 0.35]; armR = [0.25 - w, run ? 1.2 : 0.35]; }
+    if (pose === 'talk') armR = [0.9 + Math.sin(t * 5) * 0.2, 0.9];
+    /* feet: [x, raise] per side */
+    const spread = pose === 'happy' || pose === 'shock' ? 22 : pose === 'hop' ? 18 : 12;
+    let footL = 0, footR = 0; if (walking) { footL = Math.max(0, Math.sin(ph)) * (run ? 26 : 12); footR = Math.max(0, -Math.sin(ph)) * (run ? 26 : 12); }
+    if (pose === 'hop') { footL = footR = 10; }
+    const lw = stick ? 5 : 11, skin = col.skin, legCol = stick ? P.line : F.body === 'dress' ? skin : col.pants;
+    const twoBone = (sx, sy, a1, a2, side, l1, l2) => { const k = [sx + side * Math.sin(a1) * l1, sy + Math.cos(a1) * l1]; const a = a1 + a2; return { k, e: [k[0] + side * Math.sin(a) * l2, k[1] + Math.cos(a) * l2] }; };
+    const draw2 = (p0, k, e, w1, w2, c1, c2) => { if (!stick) { g.line([p0, k], w1 + 5); g.line([k, e], w2 + 5); } g.line([p0, k], w1, c1); g.line([k, e], w2, c2); };
+    /* legs: hip -> knee (pushed out) -> foot */
+    for (const [side, raise] of [[-1, footL], [1, footR]]) {
+      const hip = [side * 9, -60], foot = [side * spread, -raise], knee = [(hip[0] + foot[0]) / 2 + side * (4 + raise * 0.35), (hip[1] + foot[1]) / 2 - raise * 0.15];
+      draw2(hip, knee, foot, lw, lw, legCol, legCol); g.E(foot[0] + side * 5, foot[1] + 1, 12, 6.5, 0, col.shoe);
+    }
+    /* torso */
+    if (stick) { g.line([[0, -114], [0, -60]], 5); if (col.shirt) g.E(0, -86, 10, 22, 0, col.shirt, false); }
+    else if (F.body === 'dress') g.poly([[-16, -114], [16, -114], [26, -50], [-26, -50]], col.shirt);
+    else { g.rrect(-17, -70, 34, 14, 6, col.pants); g.rrect(-19, -116, 38, 54, 13, col.shirt); }
+    /* arms */
+    for (const [side, [a1, a2]] of [[-1, armL], [1, armR]]) {
+      const sp = [side * (stick ? 2 : 15), -106], { k, e } = twoBone(sp[0], sp[1], a1, a2, side, 27, 25);
+      draw2(sp, k, e, stick ? 5 : 9, stick ? 5 : 7, stick ? P.line : col.shirt, stick ? P.line : skin);
+      g.E(e[0], e[1], stick ? 6.5 : 8, stick ? 6.5 : 8, 0, stick ? col.shoe : skin);
+    }
+    /* head */
+    const hx = 0, hy = -152 + (pd.headDrop || 0);
+    g.E(hx, hy, 37, 36, 0, col.skin);
+    if (F.blush) { g.E(hx - 19, hy + 9, 6, 3.5, 0, '#ff9db0', false); g.E(hx + 19, hy + 9, 6, 3.5, 0, '#ff9db0', false); }
+    face(c, P, g, hx + 10, hy - 3, hx, hy + 15, pd.face, t, true);
+    if (pd.face.eyes === 'wide') { g.line([[hx - 15, hy - 17], [hx - 6, hy - 19]], 2.5); g.line([[hx + 6, hy - 19], [hx + 15, hy - 17]], 2.5); }
+    if (pose === 'sad') { g.line([[hx - 15, hy - 13], [hx - 6, hy - 16]], 2.5); g.line([[hx + 6, hy - 16], [hx + 15, hy - 13]], 2.5); }
+    c.restore();
+    return pd.layout === 'lying' ? { hx: 60 * s, hy: -56 * s - lift } : { hx: (hx - 30) * s, hy: (hy + 20) * s - lift };
+  }
+
   function fx(c, P, list, t, hx, hy) {
     for (const k of list || []) {
       if (k === 'zzz') for (let i = 0; i < 3; i++) { const q = (t * 0.6 + i / 3) % 1; c.globalAlpha = 1 - q; c.font = `bold ${22 + i * 8}px ${FONT}`; c.fillStyle = P.accent; c.fillText('Z', hx + 18 + i * 16 + q * 20, hy - 42 - q * 70 - i * 6); c.globalAlpha = 1; }
@@ -194,7 +242,7 @@
     }
   }
 
-  const TEMPLATES = { critter, shell, human };
+  const TEMPLATES = { critter, shell, human, bean };
   /** draw(ctx, name, pose, t, palette, opts) - opts: { facing: 1|-1, fx: bool, look } */
   function draw(c, name, pose, t, P, opts = {}) {
     const ch = CHARACTERS[name]; if (!ch) throw new Error('unknown character ' + name);

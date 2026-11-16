@@ -1,0 +1,14 @@
+{
+  "title": "บีนกับเพื่อน",
+  "scene": "meadow",
+  "style": "comic",
+  "track": false,
+  "shots": [
+    {
+      "id": "s1", "dur": 2.4,
+      "text": "หนึ่งเรื่อง ยี่สิบสไตล์",
+      "cam": [[0, 0, -120, 760, 520]],
+      "actors": { "stick": { "x": -200, "pose": "talk" }, "bean": { "x": 0, "pose": "happy" }, "beanpink": { "x": 200, "pose": "walk" } }
+    }
+  ]
+}

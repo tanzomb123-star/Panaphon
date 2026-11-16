@@ -2,9 +2,9 @@ const test = require('node:test'); const assert = require('node:assert');
 const { CHARACTERS, POSES } = require('../engine/characters.js');
 const { enginePage } = require('./helpers.cjs');
 
-test('library has 10 animals + 10 people and 9 poses', () => {
+test('library has 10 animals, 10 people, 3 bean figures and 9 poses', () => {
   const t = Object.values(CHARACTERS).map((c) => c.template);
-  assert.strictEqual(t.length, 20); assert.strictEqual(t.filter((x) => x === 'human').length, 10);
+  assert.strictEqual(t.length, 23); assert.strictEqual(t.filter((x) => x === 'human').length, 10); assert.strictEqual(t.filter((x) => x === 'bean').length, 3);
   assert.deepStrictEqual(POSES, ['idle', 'walk', 'hop', 'run', 'sleep', 'shock', 'happy', 'sad', 'talk']);
 });
 
@@ -26,6 +26,7 @@ test('every character x pose draws inside its declared bbox', async () => {
   assert.deepStrictEqual(bad, []);
 });
 
+test('there are 21 looks (20 reference styles + thai)', () => { assert.strictEqual(Object.keys(require('../engine/looks.js').LOOKS).length, 21); });
 test('every look draws every character without errors and leaves visible pixels', async () => {
   const { LOOKS } = require('../engine/looks.js');
   const { browser, page } = await enginePage();

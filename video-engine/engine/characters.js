@@ -25,6 +25,12 @@
     doctor:    { template: 'human', label: 'หมอ', bbox: [-98, -235, 95, 15], colors: { skin: '#e0a882', hair: '#1f1a18', top: '#ffffff', inner: '#3fb8af', bottom: '#3fb8af', shoe: '#ffffff', accent: '#7f8c8d' }, features: { hair: 'short', top: 'coat', bottom: 'pants', hat: 'none', extras: ['stethoscope'] } },
     vendor:    { template: 'human', label: 'แม่ค้า', bbox: [-98, -250, 110, 28], colors: { skin: '#c98d62', hair: '#1f1a18', top: '#e94f4f', inner: '#ffffff', bottom: '#2b2220', shoe: '#a0522d', accent: '#4fa37a' }, features: { hair: 'bun', top: 'shirt', bottom: 'pants', hat: 'straw', extras: ['apron'] } },
     detective: { template: 'human', label: 'นักสืบ', bbox: [-98, -255, 115, 20], colors: { skin: '#e3ad86', hair: '#2b2220', top: '#b8935a', inner: '#ffffff', bottom: '#4a3f35', shoe: '#2b2220', accent: '#5a3e2b' }, features: { hair: 'short', top: 'coat', bottom: 'pants', hat: 'fedora', extras: ['magnifier'] } }
+,
+
+    /* ---- bean figures: round head, 2-bone limbs (reference-sheet model). body: shirt|dress|stick ---- */
+    bean:      { template: 'bean', label: 'บีน', bbox: [-95, -250, 115, 20], colors: { skin: '#f6b24a', shirt: '#f3923d', pants: '#2f8f8a', shoe: '#d0632a' }, features: { body: 'shirt' } },
+    beanpink:  { template: 'bean', label: 'บีนชมพู', bbox: [-90, -245, 100, 20], colors: { skin: '#f7c0bb', shirt: '#9fe3c4', pants: '#f7c0bb', shoe: '#e8a0a8' }, features: { body: 'dress', blush: true, scale: 0.86 } },
+    stick:     { template: 'bean', label: 'ก้านไม้', bbox: [-95, -250, 115, 20], colors: { skin: '#ffffff', shirt: '#8bc34a', pants: '#222222', shoe: '#8bc34a' }, features: { body: 'stick' } }
   };
   /* Poses are data too: body lift, limb swing, ear lean, face and effects. */
   const POSE_DEFS = {

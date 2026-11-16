@@ -20,6 +20,22 @@ const [mode = 'characters', out = `out/${mode}.png`, a3, a4] = process.argv.slic
       names.forEach((n, i) => { c.fillText(n, 10, 40 + i * chh + chh / 2); poses.forEach((p, j) => { c.save(); c.translate(120 + j * cw + 100, 40 + i * chh + 225); c.scale(0.8, 0.8); Rig.draw(c, n, p, 0.37, P, { look }); c.restore(); }); });
       return cv.toDataURL('image/png');
     }, a3);
+  } else if (mode === 'models') {
+    png = await page.evaluate(({ who, pose }) => {
+      const looks = Object.entries(LookLib.LOOKS), tw = 300, th = 360, cols = 7, cv = document.createElement('canvas');
+      cv.width = cols * tw; cv.height = Math.ceil(looks.length / cols) * (th + 44); const c = cv.getContext('2d'); c.fillStyle = '#d9d9dd'; c.fillRect(0, 0, cv.width, cv.height);
+      looks.forEach(([id, look], i) => {
+        const x = (i % cols) * tw, y = Math.floor(i / cols) * (th + 44), P = look.palette ? look.palette(SceneLib.SCENES.meadow) : SceneLib.SCENES.meadow;
+        const o = document.createElement('canvas'); o.width = tw - 16; o.height = th - 16; const g = o.getContext('2d');
+        const gr = g.createLinearGradient(0, 0, 0, o.height); gr.addColorStop(0, P.skyTop); gr.addColorStop(1, P.skyBot); g.fillStyle = gr; g.fillRect(0, 0, o.width, o.height);
+        g.fillStyle = P.grass; g.fillRect(0, o.height - 56, o.width, 56);
+        g.save(); g.translate(o.width / 2 - 10, o.height - 46); g.scale(1.15, 1.15); Rig.draw(g, who, pose, 0.45, P, { look, fx: false }); g.restore();
+        LookLib.post(g, look, o.width, o.height, 0.45);
+        c.drawImage(o, x + 8, y + 8); c.fillStyle = '#222'; c.font = 'bold 20px Loma'; c.fillText(String(look.no).padStart(2, '0') + '  ' + look.label.replace(/ \(.*\)/, ''), x + 10, y + th + 22);
+        c.font = '15px Loma'; c.fillStyle = '#555'; const m = /\((.*)\)/.exec(look.label); if (m) c.fillText(m[1], x + 10, y + th + 40);
+      });
+      return cv.toDataURL('image/png');
+    }, { who: a3 || 'bean', pose: a4 || 'happy' });
   } else {
     const story = JSON.parse(fs.readFileSync(a3 || 'stories/people.json', 'utf8')), t = +(a4 || 2.5), W = +(process.env.SHEET_W || 360), H = +(process.env.SHEET_H || 640);
     const names = await page.evaluate((m) => Object.keys(m === 'looks' ? LookLib.LOOKS : SceneLib.SCENES), mode), tiles = [];

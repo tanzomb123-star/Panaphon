@@ -30,7 +30,7 @@ function buildApp({ db, queue, storage, auth, config }) {
 
   app.get('/v1/health', async () => ({ ok: true, queue: queue.kind, storage: storage.kind, auth: auth.devMode ? 'dev' : 'jwt' }));
   app.get('/v1/catalog', async () => ({
-    characters: Object.entries(CHARACTERS).map(([id, c]) => ({ id, kind: c.template === 'human' ? 'person' : 'animal', label: c.label || id })),
+    characters: Object.entries(CHARACTERS).map(([id, c]) => ({ id, kind: c.template === 'human' || c.template === 'bean' ? 'person' : 'animal', label: c.label || id })),
     poses: POSES, styles: Object.entries(LOOKS).map(([id, l]) => ({ id, label: l.label })), scenes: Object.keys(SCENES), props: Object.keys(PROPS), aspects: ASPECTS
   }));
 

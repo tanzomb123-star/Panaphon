@@ -478,7 +478,7 @@
   const ERR = { not_granted: 'ยังไม่ได้อนุญาตให้หน้านี้ใช้ Claude', sampling_disabled: 'บัญชีนี้ใช้ Claude จากหน้านี้ไม่ได้', rate_limited: 'เรียกใช้บ่อยเกินไป รอสักครู่แล้วลองใหม่', image_rejected: 'ใช้ภาพนี้ไม่ได้ ลองภาพ JPG หรือ PNG อื่น', invalid_json: 'AI ตอบกลับไม่ครบ ลองกดอีกครั้ง', refused: 'AI ไม่ตอบโจทย์นี้ ลองเปลี่ยนไอเดีย', session_expired: 'ต้องเข้าสู่ระบบใหม่' };
   const errText = (e) => ERR[e && e.code] || 'ติดต่อ AI ไม่สำเร็จ ลองใหม่อีกครั้ง';
   const idea = () => $('idea').value.trim() || '(ไม่ได้ระบุ)';
-  const castList = () => Object.keys(CH).map((id) => `${id} (${nameOf(id)}${CH[id].template === 'human' ? ', คน' : ', สัตว์'})`).join(', ');
+  const castList = () => Object.keys(CH).map((id) => `${id} (${nameOf(id)}${CH[id].template === 'human' || CH[id].template === 'bean' ? ', คน' : ', สัตว์'})`).join(', ');
   function withImage(sec, prompt) { const f = state.images[sec]; return f && imagesOk ? [prompt + '\nมีภาพอ้างอิงแนบมาด้วย ให้ใช้ภาพนี้ประกอบการตัดสินใจ', { images: [f] }] : [prompt, {}]; }
   const VIRAL_RULES = `หลักคอนเทนต์ไวรัลที่ต้องใช้:
 - ฮุก 0-3 วินาที: เปิดด้วย payoff เดิมพัน หรือภาพแปลก ห้ามทักทาย ห้าม "วันนี้เราจะมาพูดถึง" ห้ามเกริ่นตามลำดับเวลา พูดจบใน 2 วินาที (ไม่เกิน 9 คำ) มีคำนาม ตัวเลข หรือเดิมพันที่จับต้องได้ และเปิดคำถามค้างในหัวคนดู (open loop)
