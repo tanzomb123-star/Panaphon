@@ -1,6 +1,7 @@
 {
   "title": "กระต่ายกับเต่า",
-  "style": "storybook",
+  "scene": "meadow",
+  "style": "pastel",
   "props": [
     {
       "type": "tree",

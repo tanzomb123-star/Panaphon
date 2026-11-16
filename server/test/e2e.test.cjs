@@ -8,7 +8,7 @@ test('real render through the API produces a playable video', async () => {
   const { app, queue } = makeApp({ renderFn: render });
   const { id } = (await app.inject({ method: 'POST', url: '/v1/projects', headers: as('u1'), payload: { story } })).json();
   await app.inject({ method: 'POST', url: '/v1/dev/credits', headers: as('u1'), payload: { amount: 5 } });
-  const { jobId } = (await app.inject({ method: 'POST', url: `/v1/projects/${id}/render`, headers: as('u1'), payload: { aspect: '9:16', style: 'candy' } })).json();
+  const { jobId } = (await app.inject({ method: 'POST', url: `/v1/projects/${id}/render`, headers: as('u1'), payload: { aspect: '9:16', style: 'paper', scene: 'forest' } })).json();
   await queue.idle();
   const j = (await app.inject({ url: `/v1/jobs/${jobId}`, headers: as('u1') })).json();
   assert.strictEqual(j.status, 'done', JSON.stringify(j.errors));

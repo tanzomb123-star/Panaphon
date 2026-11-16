@@ -1,7 +1,7 @@
 const test = require('node:test'); const assert = require('node:assert');
 const { execFileSync } = require('child_process'); const fs = require('fs'); const os = require('os'); const path = require('path');
 const { render } = require('../engine/render.cjs');
-const story = { title: 'สั้น', style: 'storybook', shots: [{ id: 'a', dur: 3, text: 'ทดสอบ', cam: [[0, 0, -120, 900, 520]], actors: { cat: { x: [[0, -100], [3, 100]], pose: 'walk' } } }] };
+const story = { title: 'สั้น', style: 'pastel', shots: [{ id: 'a', dur: 3, text: 'ทดสอบ', cam: [[0, 0, -120, 900, 520]], actors: { cat: { x: [[0, -100], [3, 100]], pose: 'walk' } } }] };
 const probe = (f) => execFileSync('ffprobe', ['-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames:format=duration', '-of', 'json', f]).toString();
 
 for (const workers of [3, 5]) test(`parallel render with ${workers} workers keeps exact length`, async () => {

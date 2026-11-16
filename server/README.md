@@ -22,7 +22,7 @@ npm start           # http://localhost:8080
 H='-H x-user-id:demo -H content-type:application/json'
 curl $H -X POST localhost:8080/v1/dev/credits -d '{"amount":50}'
 PID=$(curl -s $H -X POST localhost:8080/v1/projects -d "{\"story\": $(cat ../video-engine/stories/showcase.json)}" | jq -r .id)
-JOB=$(curl -s $H -X POST localhost:8080/v1/projects/$PID/render -d '{"aspect":"9:16","style":"night"}' | jq -r .jobId)
+JOB=$(curl -s $H -X POST localhost:8080/v1/projects/$PID/render -d '{"aspect":"9:16","style":"chalk","scene":"night"}' | jq -r .jobId)
 curl -s $H localhost:8080/v1/jobs/$JOB      # status / progress / videoUrl
 ```
 
@@ -30,10 +30,10 @@ curl -s $H localhost:8080/v1/jobs/$JOB      # status / progress / videoUrl
 | Method | Path | หมายเหตุ |
 |---|---|---|
 | GET | `/v1/health` | สถานะ adapter |
-| GET | `/v1/catalog` | ตัวละคร ท่า สไตล์ props สัดส่วนจอ (ไม่ต้องล็อกอิน) |
+| GET | `/v1/catalog` | ตัวละคร (สัตว์/คน + ชื่อไทย) ท่า สไตล์ (+ชื่อไทย) ฉาก props สัดส่วนจอ (ไม่ต้องล็อกอิน) |
 | POST | `/v1/projects` `{story}` | 201 `{id, estimate:{silent,voiced}}` / 400 `{errors}` |
 | GET | `/v1/projects`, `/v1/projects/:id` | ของผู้ใช้คนนั้นเท่านั้น (คนอื่นได้ 404) |
-| POST | `/v1/projects/:id/render` `{aspect, style?, voice?}` | 202 `{jobId,cost}` / 402 เครดิตไม่พอ / 429 งานค้างเกิน |
+| POST | `/v1/projects/:id/render` `{aspect, style?, scene?, voice?}` | 202 `{jobId,cost}` / 402 เครดิตไม่พอ / 429 งานค้างเกิน |
 | GET | `/v1/jobs`, `/v1/jobs/:id` | `status` queued→running→done/failed, `progress` 0..1, `videoUrl`, `errors` |
 | GET | `/v1/me/credits` | ยอดเครดิต |
 | POST | `/v1/dev/credits` `{amount}` | เฉพาะโหมด dev |

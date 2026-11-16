@@ -3,7 +3,8 @@ const Fastify = require('fastify');
 const fs = require('fs');
 const { validateStory } = require('../../video-engine/engine/schema.cjs');
 const { CHARACTERS, POSES } = require('../../video-engine/engine/characters.js');
-const { STYLES } = require('../../video-engine/engine/styles.js');
+const { LOOKS } = require('../../video-engine/engine/looks.js');
+const { SCENES } = require('../../video-engine/engine/scenes.js');
 const { PROPS } = require('../../video-engine/engine/props.js');
 const { estimateCost } = require('./credits.cjs');
 
@@ -11,7 +12,7 @@ const ASPECTS = ['9:16', '16:9', '1:1'];
 
 function jobView(job, storage, ttl) {
   return {
-    id: job.id, projectId: job.project_id, status: job.status, progress: job.progress, aspect: job.aspect, style: job.style, voice: job.voice,
+    id: job.id, projectId: job.project_id, status: job.status, progress: job.progress, aspect: job.aspect, style: job.style, scene: job.scene, voice: job.voice,
     cost: job.cost, seconds: job.seconds, errors: job.errors, createdAt: job.created_at, updatedAt: job.updated_at,
     videoUrl: job.status === 'done' && job.video_key ? storage.signedUrl(job.video_key, ttl) : null
   };
@@ -29,7 +30,8 @@ function buildApp({ db, queue, storage, auth, config }) {
 
   app.get('/v1/health', async () => ({ ok: true, queue: queue.kind, storage: storage.kind, auth: auth.devMode ? 'dev' : 'jwt' }));
   app.get('/v1/catalog', async () => ({
-    characters: Object.keys(CHARACTERS), poses: POSES, styles: Object.keys(STYLES), props: Object.keys(PROPS), aspects: ASPECTS
+    characters: Object.entries(CHARACTERS).map(([id, c]) => ({ id, kind: c.template === 'human' ? 'person' : 'animal', label: c.label || id })),
+    poses: POSES, styles: Object.entries(LOOKS).map(([id, l]) => ({ id, label: l.label })), scenes: Object.keys(SCENES), props: Object.keys(PROPS), aspects: ASPECTS
   }));
 
   /* projects */
@@ -48,12 +50,13 @@ function buildApp({ db, queue, storage, auth, config }) {
   /* renders */
   app.post('/v1/projects/:id/render', async (req, reply) => {
     const p = db.getProject(req.params.id, req.userId); if (!p) return reply.code(404).send({ error: 'not_found' });
-    const { aspect = '9:16', style, voice = false } = req.body || {};
+    const { aspect = '9:16', style, scene, voice = false } = req.body || {};
     if (!ASPECTS.includes(aspect)) return reply.code(400).send({ error: 'bad_aspect', allowed: ASPECTS });
-    if (style !== undefined && !STYLES[style]) return reply.code(400).send({ error: 'bad_style', allowed: Object.keys(STYLES) });
+    if (style !== undefined && !LOOKS[style]) return reply.code(400).send({ error: 'bad_style', allowed: Object.keys(LOOKS) });
+    if (scene !== undefined && !SCENES[scene]) return reply.code(400).send({ error: 'bad_scene', allowed: Object.keys(SCENES) });
     if (db.activeJobs(req.userId) >= config.maxActiveJobs) return reply.code(429).send({ error: 'too_many_active_jobs', limit: config.maxActiveJobs });
     const cost = estimateCost(p.story, { voice: !!voice });
-    const jobId = db.createJob(req.userId, p.id, { aspect, style, voice: !!voice, cost });
+    const jobId = db.createJob(req.userId, p.id, { aspect, style, scene, voice: !!voice, cost });
     if (!jobId) return reply.code(402).send({ error: 'insufficient_credits', cost, balance: db.balance(req.userId) });
     await queue.add(jobId);
     return reply.code(202).send({ jobId, cost, balance: db.balance(req.userId) });

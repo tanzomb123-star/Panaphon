@@ -1,10 +1,11 @@
 /* Deterministic stage. window.init(cfg) -> total seconds; window.draw(t); window.qa(t) -> { cropped, subtitle }.
-   Every frame is a pure function of t: same input -> identical pixels. Depends on CharLib, Rig, StyleLib, PropLib. */
+   Every frame is a pure function of t: same input -> identical pixels. Depends on CharLib, Rig, SceneLib, LookLib, PropLib.
+   scene = where/when (palette, backdrop); style = look = how it is drawn (pen, post-processing, stepped timing). */
 (function () {
-  const { STYLES } = window.StyleLib, { CHARACTERS } = window.CharLib, { PROPS } = window.PropLib;
+  const { SCENES } = window.SceneLib, { LOOKS, makePen, post } = window.LookLib, { CHARACTERS } = window.CharLib, { PROPS } = window.PropLib;
   const FONT = '"Loma","Noto Sans Thai","Sarabun",sans-serif';
   const BASE_Y = 40, MAX_SUB_LINES = 3;
-  let cfg, P, c, W, H, shots = [], total = 0, story;
+  let cfg, P, L, c, W, H, shots = [], total = 0, story, layerIdx = 0;
 
   const ease = (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
   const lerp = (a, b, k) => a + (b - a) * k;
@@ -39,9 +40,13 @@
   }
   function cloud(x, y, s) { c.fillStyle = P.cloud; c.globalAlpha = 0.9; for (const [dx, dy, r] of [[0, 0, 34], [36, -12, 42], [78, 0, 32], [38, 10, 36]]) { c.beginPath(); c.arc(x + dx * s * 0.8, y + dy * s * 0.8, r * s * 0.8, 0, 7); c.fill(); } c.globalAlpha = 1; }
   function layer(par, col, hh, horizon, cam, s, fn) {
-    c.fillStyle = col; c.beginPath(); c.moveTo(0, H);
-    for (let x = 0; x <= W + 20; x += 10) { const wx = x / s + cam.cx * par; c.lineTo(x, horizon - fn(wx) * hh * s); }
-    c.lineTo(W, H); c.fill();
+    const pts = []; for (let x = 0; x <= W + 20; x += 10) { const wx = x / s + cam.cx * par; pts.push([x, horizon - fn(wx) * hh * s]); }
+    c.fillStyle = col; c.beginPath(); c.moveTo(0, H); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(W, H); c.fill();
+    if (L.edge) { // chalk / neon: outline the skyline of each backdrop layer
+      const e = L.edge(layerIdx); c.save(); c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)));
+      c.strokeStyle = e; c.lineWidth = Math.max(1.5, 2.5 * s); if (L.mode === 'neon') { c.shadowColor = e; c.shadowBlur = 12; } c.stroke(); c.restore();
+    }
+    layerIdx++;
   }
   const tri = (wx, p) => { const k = ((wx / p) % 1 + 1) % 1; return 1 - Math.abs(k * 2 - 1); };
   function backdrop(t, horizon, cam, s) {
@@ -116,23 +121,28 @@
 
   /* ---------- public API ---------- */
   window.init = function (config) {
-    cfg = config; story = cfg.story; P = STYLES[cfg.style || story.style] || STYLES.storybook; W = cfg.W; H = cfg.H;
+    cfg = config; story = cfg.story; W = cfg.W; H = cfg.H;
+    L = LOOKS[cfg.style || story.style] || LOOKS.pastel;
+    const scene = SCENES[cfg.scene || story.scene] || SCENES.meadow; P = L.palette ? L.palette(scene) : scene;
     const cv = document.getElementById('c'); cv.width = W; cv.height = H; c = cv.getContext('2d');
     let s = 0; shots = story.shots.map((sh, i) => { const o = { ...sh, dur: (cfg.durs && cfg.durs[i]) || sh.dur, start: s }; s += o.dur; return o; }); total = s;
     return total;
   };
-  window.draw = function (t) {
+  window.draw = function (tReal) {
+    const t = L.stepFps ? Math.floor(tReal * L.stepFps) / L.stepFps : tReal; // paper/pixel/chalk animate "on twos"
     const { shot, lt } = locate(t), cam = camAt(shot.cam, lt), { s, ox, oy } = xform(cam);
-    sky(t, oy, cam, s); backdrop(t, oy, cam, s);
+    layerIdx = 0; sky(t, oy, cam, s); backdrop(t, oy, cam, s);
     c.save(); c.translate(ox, oy); c.scale(s, s);
     const x0 = -ox / s - 50, x1 = (W - ox) / s + 50, y1 = (H - oy) / s + 50;
     c.fillStyle = P.grass; c.fillRect(x0, 0, x1 - x0, y1);
     if (story.track !== false) { c.fillStyle = P.track; c.fillRect(x0, 22, x1 - x0, 92); c.fillStyle = P.trackDash; for (let x = Math.floor(x0 / 80) * 80; x < x1; x += 80) c.fillRect(x, 66, 40, 6); }
-    for (const p of story.props || []) PROPS[p.type](c, p, P);
-    for (const a of actors(shot, lt)) { c.save(); c.translate(a.x, BASE_Y + (CHARACTERS[a.character].template === 'shell' ? 14 : 0)); window.Rig.draw(c, a.character, a.pose, t, P, { facing: a.facing }); c.restore(); }
+    const pen = makePen(c, P, L, t);
+    for (const p of story.props || []) PROPS[p.type](c, p, P, pen);
+    for (const a of actors(shot, lt)) { c.save(); c.translate(a.x, BASE_Y + (CHARACTERS[a.character].template === 'shell' ? 14 : 0)); window.Rig.draw(c, a.character, a.pose, t, P, { facing: a.facing, look: L }); c.restore(); }
     c.restore();
-    particles(t); drawTitle(shot, lt); drawSubtitle(shot, lt);
-    const fade = Math.max(1 - t / 0.4, 1 - (total - t) / 0.4, 0); if (fade > 0) { c.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; c.fillRect(0, 0, W, H); }
+    particles(t); post(c, L, W, H, t); // post-process the picture, then draw text crisp on top
+    const real = locate(tReal); drawTitle(real.shot, real.lt); drawSubtitle(real.shot, real.lt);
+    const fade = Math.max(1 - tReal / 0.4, 1 - (total - tReal) / 0.4, 0); if (fade > 0) { c.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; c.fillRect(0, 0, W, H); }
   };
   window.qa = function (t) {
     const { shot, lt } = locate(t), cam = camAt(shot.cam, lt), { s, ox, oy } = xform(cam), cropped = [], m = 0.01;

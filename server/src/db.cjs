@@ -7,7 +7,9 @@ const fs = require('fs'); const path = require('path');
 function openDb(file = ':memory:') {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
-  db.exec(fs.readFileSync(path.join(__dirname, '..', 'migrations', '001_init.sql'), 'utf8'));
+  for (const f of fs.readdirSync(path.join(__dirname, '..', 'migrations')).sort()) {
+    try { db.exec(fs.readFileSync(path.join(__dirname, '..', 'migrations', f), 'utf8')); } catch (e) { if (!/duplicate column/.test(e.message)) throw e; } // re-running an ALTER is fine
+  }
   const now = () => new Date().toISOString();
   const row = (r) => (r ? { ...r } : null);
   const job = (r) => (r ? { ...r, voice: !!r.voice, errors: r.errors ? JSON.parse(r.errors) : [] } : null);
@@ -15,8 +17,8 @@ function openDb(file = ':memory:') {
     insProject: db.prepare('INSERT INTO projects (id, user_id, title, story, created_at) VALUES (?, ?, ?, ?, ?)'),
     getProject: db.prepare('SELECT * FROM projects WHERE id = ? AND user_id = ?'),
     listProjects: db.prepare('SELECT id, title, created_at FROM projects WHERE user_id = ? ORDER BY created_at DESC LIMIT ?'),
-    insJob: db.prepare(`INSERT INTO jobs (id, user_id, project_id, status, progress, aspect, style, voice, cost, created_at, updated_at)
-                        VALUES (?, ?, ?, 'queued', 0, ?, ?, ?, ?, ?, ?)`),
+    insJob: db.prepare(`INSERT INTO jobs (id, user_id, project_id, status, progress, aspect, style, scene, voice, cost, created_at, updated_at)
+                        VALUES (?, ?, ?, 'queued', 0, ?, ?, ?, ?, ?, ?, ?)`),
     getJob: db.prepare('SELECT * FROM jobs WHERE id = ?'),
     listJobs: db.prepare('SELECT * FROM jobs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?'),
     activeJobs: db.prepare("SELECT COUNT(*) AS n FROM jobs WHERE user_id = ? AND status IN ('queued','running')"),
@@ -32,12 +34,12 @@ function openDb(file = ':memory:') {
     addCredits(userId, delta, reason, jobId = null) { return q.ledger.run(userId, delta, reason, jobId, now()).changes === 1; },
     activeJobs(userId) { return q.activeJobs.get(userId).n; },
     /** Charge + create the job atomically. Returns null when the balance is too low. */
-    createJob(userId, projectId, { aspect, style, voice, cost }) {
+    createJob(userId, projectId, { aspect, style, scene, voice, cost }) {
       db.exec('BEGIN IMMEDIATE');
       try {
         if (q.balance.get(userId).b < cost) { db.exec('ROLLBACK'); return null; }
         const id = crypto.randomUUID(), t = now();
-        q.insJob.run(id, userId, projectId, aspect, style || null, voice ? 1 : 0, cost, t, t);
+        q.insJob.run(id, userId, projectId, aspect, style || null, scene || null, voice ? 1 : 0, cost, t, t);
         q.ledger.run(userId, -cost, 'render', id, t);
         db.exec('COMMIT'); return id;
       } catch (e) { db.exec('ROLLBACK'); throw e; }

@@ -5,7 +5,8 @@ const { signHS256, verifyHS256 } = require('../src/auth.cjs');
 test('catalog is public and lists the engine library', async () => {
   const { app } = makeApp(); const r = await app.inject({ url: '/v1/catalog' });
   assert.strictEqual(r.statusCode, 200);
-  const b = r.json(); assert.strictEqual(b.characters.length, 10); assert.strictEqual(b.styles.length, 10); assert.deepStrictEqual(b.aspects, ['9:16', '16:9', '1:1']);
+  const b = r.json(); assert.strictEqual(b.characters.length, 20); assert.strictEqual(b.characters.filter((c) => c.kind === 'person').length, 10);
+  assert.strictEqual(b.styles.length, 10); assert.deepStrictEqual(b.styles[0], { id: 'pastel', label: 'การ์ตูนเด็กสีพาสเทล' }); assert.strictEqual(b.scenes.length, 8); assert.deepStrictEqual(b.aspects, ['9:16', '16:9', '1:1']);
 });
 test('requests without a user are rejected', async () => {
   const { app } = makeApp(); const r = await app.inject({ method: 'POST', url: '/v1/projects', payload: { story } });

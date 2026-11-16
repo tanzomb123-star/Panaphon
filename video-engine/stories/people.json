@@ -1,0 +1,28 @@
+{
+  "title": "ตลาดเช้า",
+  "scene": "meadow",
+  "style": "pastel",
+  "track": false,
+  "props": [{ "type": "house", "x": -380 }, { "type": "sign", "x": 520, "text": "ตลาดสด" }, { "type": "tree", "x": 820 }],
+  "shots": [
+    {
+      "id": "intro", "dur": 4, "title": "ตลาดเช้า",
+      "text": "เช้าวันอาทิตย์ ทุกคนในหมู่บ้านออกมาเดินตลาด",
+      "cam": [[0, 90, -110, 1340, 590]],
+      "actors": {
+        "narrator": { "x": -420, "pose": "talk" }, "dad": { "x": -250, "pose": "walk" }, "mom": { "x": -100, "pose": "happy" },
+        "boy": { "x": 40, "pose": "hop" }, "girl": { "x": 170, "pose": "walk" }, "vendor": { "x": 330, "pose": "talk", "facing": -1 },
+        "grandma": { "x": 480, "pose": "idle", "facing": -1 }
+      }
+    },
+    {
+      "id": "clue", "dur": 4,
+      "text": "แต่ครู คุณหมอ และนักสืบ กลับพบเรื่องแปลกบางอย่าง",
+      "cam": [[0, 80, -110, 900, 520], [4, 100, -110, 950, 540]],
+      "actors": {
+        "teacher": { "x": -230, "pose": [[0, "idle"], [2, "shock"]] }, "doctor": { "x": -40, "pose": "sad" },
+        "detective": { "x": 160, "pose": [[0, "walk"], [2.5, "idle"]], "facing": -1 }, "boy": { "x": 330, "pose": "sleep", "facing": -1 }
+      }
+    }
+  ]
+}

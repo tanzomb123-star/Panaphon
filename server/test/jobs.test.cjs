@@ -18,7 +18,7 @@ test('insufficient credits -> 402, no job, balance unchanged', async () => {
 });
 test('happy path: queued -> done, video URL, credits charged', async () => {
   const { app, queue, projectId } = await setup(); await grant(app, 10);
-  const r = await renderReq(app, projectId, { aspect: '1:1', style: 'night' });
+  const r = await renderReq(app, projectId, { aspect: '1:1', style: 'neon', scene: 'night' });
   assert.strictEqual(r.statusCode, 202); const { jobId, cost } = r.json(); assert.strictEqual(cost, 2);
   await queue.idle();
   const j = (await app.inject({ url: `/v1/jobs/${jobId}`, headers: as('u1') })).json();
@@ -29,8 +29,8 @@ test('happy path: queued -> done, video URL, credits charged', async () => {
 });
 test('render params reach the engine', async () => {
   const renderFn = fakeRender(); const { app, queue, projectId } = await setup({ renderFn }); await grant(app, 10);
-  await renderReq(app, projectId, { aspect: '16:9', style: 'winter' }); await queue.idle();
-  const o = renderFn.calls[0]; assert.strictEqual(o.aspect, '16:9'); assert.strictEqual(o.style, 'winter'); assert.strictEqual(o.failOnQA, true); assert.strictEqual(o.story.title, 'ทดสอบ');
+  await renderReq(app, projectId, { aspect: '16:9', style: 'chalk', scene: 'winter' }); await queue.idle();
+  const o = renderFn.calls[0]; assert.strictEqual(o.aspect, '16:9'); assert.strictEqual(o.style, 'chalk'); assert.strictEqual(o.scene, 'winter'); assert.strictEqual(o.failOnQA, true); assert.strictEqual(o.story.title, 'ทดสอบ');
 });
 test('failed render -> failed with errors, refunded exactly once', async () => {
   const { app, db, queue, projectId } = await setup({ renderFn: fakeRender({ fail: true }) }); await grant(app, 10);
@@ -62,5 +62,6 @@ test('active job limit -> 429', async () => {
 test('bad aspect / style -> 400', async () => {
   const { app, projectId } = await setup(); await grant(app, 10);
   assert.strictEqual((await renderReq(app, projectId, { aspect: '4:3' })).statusCode, 400);
-  assert.strictEqual((await renderReq(app, projectId, { style: 'neon' })).statusCode, 400);
+  assert.strictEqual((await renderReq(app, projectId, { style: 'glitter' })).statusCode, 400);
+  assert.strictEqual((await renderReq(app, projectId, { scene: 'moon' })).statusCode, 400);
 });

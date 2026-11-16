@@ -32,7 +32,7 @@ function createWorker({ db, storage, config, renderFn, voiceFn = defaultVoiceFn,
       if (job.voice) { voice = await voiceFn(storyFile, dir, config.voiceId); db.updateJob(jobId, { progress: 0.05 }); }
       const out = path.join(dir, 'out.mp4');
       const r = await renderFn({
-        story: project.story, aspect: job.aspect, style: job.style || undefined, short: config.renderShort, fps: config.renderFps,
+        story: project.story, aspect: job.aspect, style: job.style || undefined, scene: job.scene || undefined, short: config.renderShort, fps: config.renderFps,
         workers: config.renderWorkers, out, timeline: voice.timeline, audio: voice.audio, failOnQA: true,
         onProgress: (v) => db.updateJob(jobId, { progress: Math.min(0.99, (job.voice ? 0.05 : 0) + v * (job.voice ? 0.95 : 1)) })
       });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Story JSON -> MP4. Validate -> QA (crop, subtitle overflow, black/frozen frames, voice timing) -> parallel render -> concat + audio.
-   node engine/render.cjs --story stories/rabbit-tortoise.json --aspect 9:16 [--style night] [--short 720] [--fps 24]
+   node engine/render.cjs --story stories/rabbit-tortoise.json --aspect 9:16 [--style chalk] [--scene night] [--short 720] [--fps 24]
         [--workers 4] [--timeline build/timeline.json --audio build/narration.mp3] [--out out/clip.mp4] [--no-qa-fail]
    Exit: 0 ok, 1 invalid story / ffmpeg error, 2 QA failure. */
 const { chromium } = require('playwright');
@@ -65,7 +65,7 @@ async function render(o) {
   const vr = validateStory(o.story); if (!vr.ok) return { code: 1, errors: vr.errors };
   const { W, H } = dims(o.aspect, o.short), fps = o.fps;
   const durs = o.timeline && fs.existsSync(o.timeline) ? JSON.parse(fs.readFileSync(o.timeline, 'utf8')).durs : [];
-  const cfg = { W, H, story: o.story, style: o.style, durs };
+  const cfg = { W, H, story: o.story, style: o.style, scene: o.scene, durs };
   // progress: QA 0-10%, frames 10-95%, concat/mux 95-100%; values only ever increase
   let last = 0; const report = (v) => { if (o.onProgress && v > last) { last = v; o.onProgress(+v.toFixed(3)); } };
   const browser = await chromium.launch(); let tmp = null;
@@ -100,7 +100,7 @@ if (require.main === module) {
   const storyPath = arg('story', 'stories/rabbit-tortoise.json'), aspect = arg('aspect', '9:16');
   const story = JSON.parse(fs.readFileSync(path.resolve(storyPath), 'utf8'));
   render({
-    story, aspect, style: arg('style', story.style), short: +arg('short', 720), fps: +arg('fps', 24),
+    story, aspect, style: arg('style', story.style), scene: arg('scene', story.scene), short: +arg('short', 720), fps: +arg('fps', 24),
     workers: +arg('workers', Math.min(4, os.cpus().length)), timeline: arg('timeline'), audio: arg('audio'),
     out: path.resolve(arg('out', `out/${path.basename(storyPath, '.json')}-${aspect.replace(':', 'x')}.mp4`)),
     failOnQA: !flag('no-qa-fail'), qa: !flag('skip-qa')

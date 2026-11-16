@@ -2,7 +2,8 @@
    validateStory(obj) -> { ok, errors: ["path: message"], story } */
 const { z } = require('zod');
 const { CHARACTERS, POSES } = require('./characters.js');
-const { STYLES } = require('./styles.js');
+const { SCENES } = require('./scenes.js');
+const { LOOKS } = require('./looks.js');
 const { PROPS } = require('./props.js');
 
 const num = z.number().finite();
@@ -16,7 +17,7 @@ const Shot = z.object({
   actors: z.record(Actor)
 }).strict();
 const Story = z.object({
-  title: z.string().min(1), style: z.string().optional(), track: z.boolean().optional(),
+  title: z.string().min(1), style: z.string().optional(), scene: z.string().optional(), track: z.boolean().optional(),
   props: z.array(z.object({ type: z.string(), x: num, text: z.string().max(30).optional() }).strict()).optional(),
   shots: z.array(Shot).min(1).max(40)
 }).strict();
@@ -33,7 +34,8 @@ function validateStory(obj) {
   const r = Story.safeParse(obj);
   if (!r.success) return { ok: false, errors: r.error.issues.map((i) => `${fmt(i.path)}: ${i.message}`), story: null };
   const s = r.data, errors = [];
-  if (s.style && !STYLES[s.style]) errors.push(`style: unknown style "${s.style}" (known: ${Object.keys(STYLES).join(', ')})`);
+  if (s.style && !LOOKS[s.style]) errors.push(`style: unknown style "${s.style}" (known: ${Object.keys(LOOKS).join(', ')})`);
+  if (s.scene && !SCENES[s.scene]) errors.push(`scene: unknown scene "${s.scene}" (known: ${Object.keys(SCENES).join(', ')})`);
   (s.props || []).forEach((p, i) => { if (!PROPS[p.type]) errors.push(`props[${i}].type: unknown prop "${p.type}"`); });
   const ids = new Set();
   s.shots.forEach((sh, si) => {

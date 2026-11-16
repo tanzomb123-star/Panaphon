@@ -11,7 +11,9 @@ test('all stories in stories/ are valid', () => {
 test('unknown character is reported with its path', () => { const s = demo(); s.shots[0].actors.dragon = { x: 0 }; has(validateStory(s), 'shots[0].actors.dragon'); });
 test('aliased character via "character" field', () => { const s = demo(); s.shots[0].actors.hero = { character: 'cat', x: 0 }; assert.ok(validateStory(s).ok); });
 test('unknown pose', () => { const s = demo(); s.shots[1].actors.rabbit.pose = [[0, 'fly']]; has(validateStory(s), 'shots[1].actors.rabbit.pose[0]: unknown pose "fly"'); });
-test('unknown style', () => { const s = demo(); s.style = 'neon'; has(validateStory(s), 'unknown style "neon"'); });
+test('unknown style', () => { const s = demo(); s.style = 'glitter'; has(validateStory(s), 'unknown style "glitter"'); });
+test('unknown scene', () => { const s = demo(); s.scene = 'moon'; has(validateStory(s), 'unknown scene "moon"'); });
+test('all 10 looks and 8 scenes are accepted', () => { for (const st of Object.keys(require('../engine/looks.js').LOOKS)) for (const sc of Object.keys(require('../engine/scenes.js').SCENES)) { const s = demo(); s.style = st; s.scene = sc; assert.ok(validateStory(s).ok, st + '/' + sc); } });
 test('unknown prop', () => { const s = demo(); s.props.push({ type: 'castle', x: 0 }); has(validateStory(s), 'props[2].type'); });
 test('keyframes out of order', () => { const s = demo(); s.shots[2].actors.rabbit.x = [[2, 0], [1, 5]]; has(validateStory(s), 'ascending'); });
 test('keyframe beyond shot duration', () => { const s = demo(); s.shots[2].actors.rabbit.x = [[0, 0], [9, 5]]; has(validateStory(s), 'beyond shot duration'); });

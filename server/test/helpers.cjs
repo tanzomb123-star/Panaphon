@@ -7,7 +7,7 @@ const { createWorker } = require('../src/worker.cjs');
 const { buildApp } = require('../src/app.cjs');
 
 const story = {
-  title: 'ทดสอบ', style: 'storybook',
+  title: 'ทดสอบ', style: 'pastel', scene: 'meadow',
   shots: [{ id: 'a', dur: 2, text: 'แมวเดินเล่นในสวน', cam: [[0, 0, -120, 900, 520]], actors: { cat: { x: [[0, -100], [2, 100]], pose: 'walk' } } }]
 };
 
