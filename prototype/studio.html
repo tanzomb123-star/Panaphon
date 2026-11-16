@@ -68,6 +68,13 @@ textarea { width: 100%; box-sizing: border-box; font: 15px/1.5 var(--body); colo
   #c { max-height: 48vh }
 }
 input[type=file] { display: none }
+.board { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px }
+.shot { text-align: left; border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; font: inherit; color: var(--fg) }
+.shot canvas { width: 100%; height: auto; border-radius: 8px; background: #000; display: block }
+.shot .cap { display: flex; justify-content: space-between; gap: 6px; font: 600 12px/1.2 var(--body); color: var(--muted); font-variant-numeric: tabular-nums }
+.shot p { margin: 0; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere }
+.shot[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft) }
+.shot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 </style>
 
 <div class="wrap">
@@ -78,14 +85,27 @@ input[type=file] { display: none }
 
   <section class="studio">
     <div class="steps">
-      <div class="card">
-        <div class="card-head"><h2>ไอเดียคลิป</h2></div>
+      <div class="card" id="sec-story">
+        <div class="card-head"><h2><span class="n">1</span> บทและเรื่อง</h2>
+          <div class="tools"><label class="btn" for="img-story">ใส่ภาพ</label></div></div>
+        <label class="hint" for="idea">ไอเดียคลิป</label>
         <textarea id="idea" rows="2" placeholder="เช่น นิทานสอนใจเรื่องความซื่อสัตย์ หรือ ประวัติข้าวไทยใน 30 วินาที">เด็กชายทำกระเป๋าเงินหายในตลาด แล้วแม่ค้าใจดีช่วยตามหาเจ้าของ</textarea>
-        <p class="hint">ปุ่ม AI ช่วยคิด ทุกปุ่มด้านล่างใช้ไอเดียนี้ (และภาพที่ใส่ในส่วนนั้น) เป็นโจทย์</p>
+        <input type="file" id="img-story" accept="image/*">
+        <div class="thumb" id="thumb-story" hidden></div>
+        <button class="btn primary" type="button" data-ai="story">AI เขียนบทจากไอเดีย</button>
+        <p class="ai-note" id="note-story" hidden></p>
+        <div class="chips" id="stories"></div>
+        <p class="hint">AI เขียนบทภาษาไทย 3-5 ช็อตด้วยตัวละครในขั้นที่ 2 ปุ่ม AI ช่วยคิด ในขั้นอื่นๆ ก็ใช้ไอเดียนี้เป็นโจทย์ ระบบจัดตำแหน่งตัวละครและกล้องเองเพื่อไม่ให้ใครโดนตัดขอบ</p>
+      </div>
+
+      <div class="card" id="sec-board">
+        <div class="card-head"><h2>สตอรี่บอร์ด <small class="hint" id="board-sum"></small></h2></div>
+        <div class="board" id="board"></div>
+        <p class="hint">ภาพตัวอย่างของแต่ละช็อตตามตัวเลือกปัจจุบัน แตะช็อตเพื่อเล่นจากตรงนั้น</p>
       </div>
 
       <div class="card" id="sec-cast">
-        <div class="card-head"><h2><span class="n">1</span> ตัวละคร <small class="hint" id="cast-count"></small></h2>
+        <div class="card-head"><h2><span class="n">2</span> ตัวละคร <small class="hint" id="cast-count"></small></h2>
           <div class="tools"><label class="btn" for="img-cast">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="cast">AI ช่วยคิด</button></div></div>
         <input type="file" id="img-cast" accept="image/*">
         <div class="thumb" id="thumb-cast" hidden></div>
@@ -95,7 +115,7 @@ input[type=file] { display: none }
       </div>
 
       <div class="card" id="sec-scene">
-        <div class="card-head"><h2><span class="n">2</span> ฉาก</h2>
+        <div class="card-head"><h2><span class="n">3</span> ฉาก</h2>
           <div class="tools"><label class="btn" for="img-scene">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="scene">AI ช่วยคิด</button></div></div>
         <input type="file" id="img-scene" accept="image/*">
         <div class="thumb" id="thumb-scene" hidden></div>
@@ -104,7 +124,7 @@ input[type=file] { display: none }
       </div>
 
       <div class="card" id="sec-look">
-        <div class="card-head"><h2><span class="n">3</span> สไตล์ภาพ</h2>
+        <div class="card-head"><h2><span class="n">4</span> สไตล์ภาพ</h2>
           <div class="tools"><label class="btn" for="img-look">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="look">AI ช่วยคิด</button></div></div>
         <input type="file" id="img-look" accept="image/*">
         <div class="thumb" id="thumb-look" hidden></div>
@@ -113,7 +133,7 @@ input[type=file] { display: none }
       </div>
 
       <div class="card" id="sec-aspect">
-        <div class="card-head"><h2><span class="n">4</span> สัดส่วนจอ</h2>
+        <div class="card-head"><h2><span class="n">5</span> สัดส่วนจอ</h2>
           <div class="tools"><label class="btn" for="img-aspect">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="aspect">AI ช่วยคิด</button></div></div>
         <input type="file" id="img-aspect" accept="image/*">
         <div class="thumb" id="thumb-aspect" hidden></div>
@@ -121,16 +141,6 @@ input[type=file] { display: none }
         <div class="aspects" id="aspects"></div>
       </div>
 
-      <div class="card" id="sec-story">
-        <div class="card-head"><h2><span class="n">5</span> บทและเรื่อง</h2>
-          <div class="tools"><label class="btn" for="img-story">ใส่ภาพ</label></div></div>
-        <input type="file" id="img-story" accept="image/*">
-        <div class="thumb" id="thumb-story" hidden></div>
-        <div class="chips" id="stories"></div>
-        <button class="btn primary" type="button" data-ai="story">AI เขียนบทจากไอเดียและตัวเลือกด้านบน</button>
-        <p class="ai-note" id="note-story" hidden></p>
-        <p class="hint">AI เขียนบทภาษาไทย 3-5 ช็อตด้วยตัวละครที่เลือก ระบบจัดตำแหน่งตัวละครและกล้องเองเพื่อไม่ให้ใครโดนตัดขอบ</p>
-      </div>
     </div>
 
     <div class="stagebox">
@@ -208,8 +218,32 @@ input[type=file] { display: none }
     canvas.style.width = W + 'px'; canvas.style.aspectRatio = W + ' / ' + H; canvas.style.height = 'auto';
     if (state.t > state.total) state.t = 0;
     $('meta').textContent = `${story.title} · ${LOOKS[state.look].label} · ${SCENE_TH[state.scene]} · ${state.aspect}`;
-    castPalette();
+    castPalette(); buildBoard(story, W, H);
   }
+
+  /* ---------- storyboard: one still per shot, drawn by the same stage ---------- */
+  let boardShots = [];
+  function buildBoard(story, W, H) {
+    const box = $('board'); box.innerHTML = ''; boardShots = [];
+    let start = 0; const tw = 300, th = Math.round(tw * H / W);
+    story.shots.forEach((sh, i) => {
+      const dur = sh.dur, t = start + Math.min(dur * 0.6, dur - 0.3);
+      window.draw(t);
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'shot';
+      const cv = document.createElement('canvas'); cv.width = tw; cv.height = th; cv.getContext('2d').drawImage(canvas, 0, 0, tw, th);
+      const cap = document.createElement('div'); cap.className = 'cap';
+      const who = Object.entries(sh.actors).map(([id, a]) => nameOf(a.character || id)).join(', ');
+      cap.innerHTML = `<span>ช็อต ${i + 1}</span><span>${start.toFixed(1)}-${(start + dur).toFixed(1)} วิ</span>`;
+      const p = document.createElement('p'); p.textContent = sh.text || sh.title || '(ไม่มีบรรยาย)';
+      const w = document.createElement('div'); w.className = 'cap'; w.textContent = who;
+      const s0 = start; b.addEventListener('click', () => { state.t = s0 + 0.01; state.playing = true; $('play').textContent = '❚❚'; $('c').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+      b.append(cv, cap, p, w); box.appendChild(b); boardShots.push({ b, start, end: start + dur });
+      start += dur;
+    });
+    $('board-sum').textContent = `${story.shots.length} ช็อต · ${start.toFixed(1)} วินาที`;
+    window.draw(state.t);
+  }
+  function markBoard(t) { for (const s of boardShots) s.b.setAttribute('aria-current', String(t >= s.start && t < s.end)); }
   let last = performance.now(), tick = 0;
   function frame(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
@@ -217,7 +251,7 @@ input[type=file] { display: none }
     try { window.draw(state.t); } catch (e) { /* stage not ready */ }
     $('seek').value = String(Math.round(state.t / state.total * 1000));
     $('time').textContent = `${state.t.toFixed(1)} / ${state.total.toFixed(1)} วิ`;
-    if ((tick = (tick + 1) % 3) === 0) castTick(state.t);
+    if ((tick = (tick + 1) % 3) === 0) { castTick(state.t); markBoard(state.t); }
     requestAnimationFrame(frame);
   }
 
