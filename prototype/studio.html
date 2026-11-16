@@ -1,229 +1,255 @@
-<title>Panaphon Studio Preview</title>
+<title>Panaphon Studio</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
 <style>
-/* layout: builder steps on the left, live stage on the right (sticky on desktop); one column on phones with the stage first */
+/* layout: sticky top bar with step tabs; steps column + sticky monitor (player, storyboard strip, export) on desktop; monitor first on phones */
 :root {
-  --bg: #f3f1ec; --panel: #ffffff; --fg: #1f2329; --muted: #646b75; --line: #dcd8cf;
-  --accent: #e2572c; --accent-fg: #ffffff; --accent-soft: #fbe3d9; --chip: #ebe7df; --stage: #16181d; --ok: #2f8f5b;
-  --display: "Bai Jamjuree", "Noto Sans Thai", system-ui, sans-serif;
-  --body: "Noto Sans Thai", system-ui, sans-serif;
+  --bg: #f4f2ee; --panel: #ffffff; --raised: #faf9f6; --fg: #1d2026; --muted: #646a73; --line: #e2ded6;
+  --accent: #e2572c; --accent-fg: #ffffff; --accent-soft: #fce6dc; --chip: #ece8e1; --monitor: #121418; --monitor-fg: #e9e6e0; --ok: #2f8f5b;
+  --display: "Bai Jamjuree", "Noto Sans Thai", system-ui, sans-serif; --body: "Noto Sans Thai", system-ui, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, "Noto Sans Thai", monospace;
+  --r: 16px; --shadow: 0 1px 2px rgba(30, 24, 16, .05), 0 6px 20px rgba(30, 24, 16, .05);
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #15171b; --panel: #1e2126; --fg: #eceae6; --muted: #9aa1ab; --line: #2f333a; --accent: #ff7a4d; --accent-fg: #1a1a1a; --accent-soft: #3a2a24; --chip: #2a2e35; --stage: #0b0c0f; --ok: #5cc48c; color-scheme: dark } }
-:root[data-theme="dark"] { --bg: #15171b; --panel: #1e2126; --fg: #eceae6; --muted: #9aa1ab; --line: #2f333a; --accent: #ff7a4d; --accent-fg: #1a1a1a; --accent-soft: #3a2a24; --chip: #2a2e35; --stage: #0b0c0f; --ok: #5cc48c; color-scheme: dark }
-body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
-.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px }
-header h1 { font: 700 clamp(26px, 4vw, 34px)/1.15 var(--display); margin: 0; text-wrap: balance }
-header p { margin: 6px 0 0; color: var(--muted); max-width: 64ch }
-.studio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 22px; align-items: start }
-.steps { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
-.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px }
-.card-head h2 { font: 700 17px/1.2 var(--display); margin: 0; flex: 1 1 160px }
-.card-head .n { color: var(--accent) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #131519; --panel: #1b1e23; --raised: #20242a; --fg: #ecebe7; --muted: #9ca2ab; --line: #2c3037; --accent: #ff7a4d; --accent-fg: #191919; --accent-soft: #3b2922; --chip: #272b31; --monitor: #0a0b0d; --ok: #5cc48c; --shadow: none; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #131519; --panel: #1b1e23; --raised: #20242a; --fg: #ecebe7; --muted: #9ca2ab; --line: #2c3037; --accent: #ff7a4d; --accent-fg: #191919; --accent-soft: #3b2922; --chip: #272b31; --monitor: #0a0b0d; --ok: #5cc48c; --shadow: none; color-scheme: dark }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); margin: 0 }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel) }
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--panel) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line) }
+.topbar-in { max-width: 1240px; margin: 0 auto; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); display: flex; align-items: center; gap: 16px }
+.brand { font: 700 18px/1 var(--display); white-space: nowrap; display: flex; align-items: center; gap: 8px }
+.brand i { width: 22px; height: 22px; border-radius: 7px; background: var(--accent); display: inline-block; position: relative }
+.brand i::after { content: ""; position: absolute; left: 8px; top: 6px; border-left: 8px solid var(--accent-fg); border-top: 5px solid transparent; border-bottom: 5px solid transparent }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0 }
+.tabs button { flex: none; border: 0; background: none; color: var(--muted); font: 600 14px/1 var(--body); padding: 9px 11px; border-radius: 999px; cursor: pointer }
+.tabs button:hover { background: var(--chip); color: var(--fg) }
+.tabs button b { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--chip); color: var(--fg); font-size: 12px; margin-right: 6px }
+.page { max-width: 1240px; margin: 0 auto; padding: 22px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 410px); gap: 24px; align-items: start }
+.intro { grid-column: 1 / -1 }
+.intro h1 { font: 700 clamp(26px, 3.6vw, 36px)/1.12 var(--display); margin: 0; text-wrap: balance }
+.intro p { margin: 8px 0 0; color: var(--muted); max-width: 70ch }
+.steps { display: flex; flex-direction: column; gap: 18px; min-width: 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; box-shadow: var(--shadow); scroll-margin-top: 76px }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px }
+.card-head h2 { font: 700 19px/1.2 var(--display); margin: 0; flex: 1 1 200px; display: flex; align-items: center; gap: 10px }
+.num { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font: 700 14px/1 var(--display) }
+.sub-h { font: 700 15px/1.2 var(--display); margin: 8px 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line) }
+.sub-h em { font-style: normal; color: var(--accent) }
 .tools { display: flex; gap: 6px; flex-wrap: wrap }
-.btn { font: 600 13px/1 var(--body); border: 1px solid var(--line); background: var(--panel); color: var(--fg); padding: 9px 12px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px }
+.btn { font: 600 13px/1 var(--body); border: 1px solid var(--line); background: var(--panel); color: var(--fg); padding: 9px 12px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none }
 .btn:hover { border-color: var(--accent) }
-.btn.ai { background: var(--accent-soft); border-color: transparent }
-.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; padding: 12px 16px; font-size: 15px }
-.btn[disabled] { opacity: .55; cursor: wait }
+.btn.ai { background: var(--accent-soft); border-color: transparent; color: var(--fg) }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; padding: 12px 18px; font-size: 15px; border-radius: 12px }
+.btn.big { width: 100% }
+.btn[disabled] { opacity: .55; cursor: progress }
 .chips { display: flex; flex-wrap: wrap; gap: 6px }
-.chip { font: 600 14px/1 var(--body); border: 1px solid transparent; background: var(--chip); color: var(--fg); padding: 9px 12px; border-radius: 999px; cursor: pointer }
+.chip { font: 600 14px/1 var(--body); border: 1px solid transparent; background: var(--chip); color: var(--fg); padding: 9px 13px; border-radius: 999px; cursor: pointer }
 .chip:hover { border-color: var(--line) }
 .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg) }
-.chip small { font-weight: 400; opacity: .75; margin-left: 4px }
-.chip:focus-visible, .btn:focus-visible, .tile:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
-textarea { width: 100%; box-sizing: border-box; font: 15px/1.5 var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; resize: vertical; min-height: 64px }
+.chip small { font-weight: 500; opacity: .75; margin-left: 5px }
+:is(.chip, .btn, .tile, .theme, .hook, .shot, .aspect, .tabs button, .drop):focus-visible, :is(textarea, input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+textarea, input[type=text], select { width: 100%; box-sizing: border-box; font: 15px/1.5 var(--body); color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px }
+textarea { resize: vertical; min-height: 64px }
+textarea.script { font: 14px/1.65 var(--mono); min-height: 340px }
+input[type=file] { display: none }
 .hint { color: var(--muted); font-size: 13px; margin: 0 }
-.ai-note { font-size: 13px; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--accent-soft); color: var(--fg) }
+.label { font: 600 12px/1 var(--body); letter-spacing: .05em; color: var(--muted) }
+.ai-note { font-size: 13px; margin: 0; padding: 9px 12px; border-radius: 10px; background: var(--accent-soft); white-space: pre-line }
 .ai-note.err { background: var(--chip) }
 .thumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted) }
-.thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line) }
+.thumb img { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line) }
 .thumb button { border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; font: inherit }
-.cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px }
-.tile { position: relative; background: var(--bg); border: 2px solid transparent; border-radius: 12px; padding: 4px 4px 6px; display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 0; font: inherit; color: var(--fg) }
-.tile canvas { width: 100%; aspect-ratio: 1; display: block }
-.tile b { font: 600 13px/1.25 var(--body) }
-.tile[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
-.tile .badge { position: absolute; top: 4px; right: 6px; background: var(--accent); color: var(--accent-fg); border-radius: 999px; font: 700 12px/20px var(--body); width: 20px; text-align: center }
-.tile[aria-pressed="false"] .badge { display: none }
-.aspects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
-.aspect { border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font: 600 14px/1.2 var(--body); color: var(--fg) }
-.aspect i { display: block; background: var(--muted); border-radius: 3px; opacity: .5 }
-.aspect small { font-weight: 400; color: var(--muted); font-size: 12px; text-align: center }
-.aspect[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
-.aspect[aria-pressed="true"] i { background: var(--accent); opacity: 1 }
-.stagebox { background: var(--stage); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 10px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px) }
-.screen { display: flex; justify-content: center }
-#c { display: block; max-width: 100%; max-height: 68vh; border-radius: 10px; background: #000 }
-.transport { display: flex; align-items: center; gap: 10px }
-.transport button { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-fg); font-size: 15px; cursor: pointer }
-.transport input { flex: 1; min-width: 0; accent-color: var(--accent) }
-.time { font: 600 13px/1 var(--body); font-variant-numeric: tabular-nums; min-width: 78px; text-align: right; color: #c9c6c0 }
-.meta { color: #a9a6a0; font-size: 13px; margin: 0 }
-@media (max-width: 860px) {
-  .studio { grid-template-columns: minmax(0, 1fr) }
-  .stagebox { order: -1; position: static }
-  #c { max-height: 48vh }
-}
-input[type=file] { display: none }
-[hidden] { display: none !important }
-.themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px }
-.theme { text-align: left; border: 2px solid var(--line); background: var(--bg); border-radius: 14px; padding: 6px 6px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font: inherit; color: var(--fg); min-width: 0 }
+.field { display: flex; flex-direction: column; gap: 6px }
+.themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px }
+.theme { text-align: left; border: 2px solid transparent; background: var(--raised); border-radius: 14px; padding: 6px 6px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; font: inherit; color: var(--fg); min-width: 0; outline: 1px solid var(--line) }
 .theme canvas { width: 100%; height: auto; border-radius: 10px; display: block }
-.theme b { font: 700 16px/1.2 var(--display); padding: 2px 4px 0 }
-.theme span { font-size: 12px; line-height: 1.35; color: var(--muted); padding: 0 4px }
-.theme[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
-.theme:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
-.label { font: 600 12px/1 var(--body); letter-spacing: .06em; color: var(--muted) }
-.opts { display: flex; flex-wrap: wrap; gap: 12px }
-.opt { display: flex; flex-direction: column; gap: 6px; min-width: 0 }
-.phase { font: 700 15px/1.2 var(--display); margin-top: 6px; padding-top: 10px; border-top: 1px dashed var(--line) }
-.phase b { color: var(--accent) }
+.theme b { font: 700 15px/1.25 var(--display); padding: 4px 4px 0 } .theme span { font-size: 12px; line-height: 1.35; color: var(--muted); padding: 0 4px }
+.theme[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); outline-color: transparent }
+.theme-note { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 14px }
+.theme-note b { font: 700 16px/1.2 var(--display) } .theme-note span { color: var(--muted) }
 .hooks { display: grid; gap: 8px }
-.hook { text-align: left; border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font: inherit; color: var(--fg); min-width: 0 }
+.hook { text-align: left; border: 2px solid var(--line); background: var(--raised); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font: inherit; color: var(--fg); min-width: 0 }
 .hook[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
-.hook .tag { font: 600 12px/1.2 var(--body); color: var(--accent) }
-.hook .line { font-weight: 600; font-size: 15px; overflow-wrap: anywhere }
-.hook .sub { font-size: 13px; color: var(--muted); overflow-wrap: anywhere }
-textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sans Thai", monospace; min-height: 320px }
-.warns { margin: 0; padding-left: 20px; font-size: 13px; color: var(--fg); display: flex; flex-direction: column; gap: 2px }
-.warns li::marker { color: var(--accent) }
-.howto summary { cursor: pointer; font-size: 13px; color: var(--muted) }
-.howto code { background: var(--chip); padding: 1px 5px; border-radius: 4px; font-size: 12px }
+.hook .tag { font: 600 12px/1.2 var(--body); color: var(--accent) } .hook .line { font-weight: 600; overflow-wrap: anywhere } .hook .sub { font-size: 13px; color: var(--muted); overflow-wrap: anywhere }
+.warns { margin: 0; padding-left: 20px; font-size: 13px; display: flex; flex-direction: column; gap: 2px } .warns li::marker { color: var(--accent) }
+details summary { cursor: pointer; font-size: 13px; color: var(--muted) } code { background: var(--chip); padding: 1px 5px; border-radius: 4px; font-size: 12px }
 .qa, .extras { display: flex; flex-direction: column; gap: 8px; font-size: 14px }
-.qa .score { display: flex; align-items: baseline; gap: 10px; font: 700 15px/1.2 var(--display) }
-.qa .score strong { font-size: 30px; color: var(--accent); font-variant-numeric: tabular-nums }
-.qa ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px }
-.qa li { display: flex; gap: 8px; align-items: baseline }
-.qa .mark { flex: none; width: 18px; text-align: center; font-weight: 700 }
-.qa .ok .mark { color: var(--ok) } .qa .bad .mark { color: var(--accent) }
-.box { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; overflow-wrap: anywhere }
-.box h3 { font: 700 13px/1.2 var(--body); margin: 0 0 4px; color: var(--muted) }
-.board { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px }
-.shot { text-align: left; border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; font: inherit; color: var(--fg) }
-.shot canvas { width: 100%; height: auto; border-radius: 8px; background: #000; display: block }
-.shot .cap { display: flex; justify-content: space-between; gap: 6px; font: 600 12px/1.2 var(--body); color: var(--muted); font-variant-numeric: tabular-nums }
-.shot p { margin: 0; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere }
-.shot[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft) }
-.shot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.qa .score { display: flex; align-items: baseline; gap: 10px; font: 700 15px/1.2 var(--display) } .qa .score strong { font-size: 32px; color: var(--accent); font-variant-numeric: tabular-nums }
+.qa ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px } .qa li { display: flex; gap: 8px; align-items: baseline }
+.qa .mark { flex: none; width: 18px; text-align: center; font-weight: 700 } .qa .ok .mark { color: var(--ok) } .qa .bad .mark { color: var(--accent) }
+.box { background: var(--raised); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; overflow-wrap: anywhere; white-space: pre-line } .box h3 { font: 700 13px/1.2 var(--body); margin: 0 0 4px; color: var(--muted); white-space: normal }
+.cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px }
+.tile { position: relative; background: var(--raised); border: 2px solid transparent; border-radius: 12px; padding: 4px 4px 6px; display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 0; font: inherit; color: var(--fg); outline: 1px solid var(--line) }
+.tile canvas { width: 100%; aspect-ratio: 1; display: block; border-radius: 8px } .tile b { font: 600 12.5px/1.25 var(--body); text-align: center; overflow-wrap: anywhere }
+.tile[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); outline-color: transparent }
+.tile .badge { position: absolute; top: 4px; right: 6px; background: var(--accent); color: var(--accent-fg); border-radius: 999px; font: 700 12px/20px var(--body); width: 20px; text-align: center }
+.tile[aria-pressed="false"] .badge { display: none } .tile .new { position: absolute; top: 5px; left: 6px; font: 700 10px/1 var(--body); background: var(--fg); color: var(--panel); padding: 3px 5px; border-radius: 5px }
+.makers { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px }
+.maker { border: 1px solid var(--line); background: var(--raised); border-radius: 14px; padding: 10px; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: start }
+.maker canvas { width: 96px; height: 96px; border-radius: 10px; background: var(--chip) }
+.maker .f { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px }
+.maker .f > * { min-width: 0 } .maker .wide { grid-column: 1 / -1 }
+.maker select, .maker input[type=text] { padding: 6px 8px; font-size: 13px; border-radius: 8px }
+.maker .kind { font: 700 11px/1 var(--body); color: var(--accent); letter-spacing: .04em }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; grid-column: 1 / -1 }
+.swatches label { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; color: var(--muted) }
+.swatches input { width: 30px; height: 26px; border: 1px solid var(--line); border-radius: 6px; padding: 0; background: none; cursor: pointer }
+.maker .role { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); margin: 0 }
+.maker .del { grid-column: 1 / -1; justify-self: start; border: 0; background: none; color: var(--muted); text-decoration: underline; cursor: pointer; font: 13px var(--body); padding: 0 }
+.aspects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.aspect { border: 2px solid var(--line); background: var(--raised); border-radius: 12px; padding: 10px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font: 600 14px/1.2 var(--body); color: var(--fg) }
+.aspect i { display: block; background: var(--muted); border-radius: 3px; opacity: .45 } .aspect small { font-weight: 400; color: var(--muted); font-size: 12px; text-align: center }
+.aspect[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) } .aspect[aria-pressed="true"] i { background: var(--accent); opacity: 1 }
+.drop { border: 2px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; background: var(--raised) }
+.drop.over { border-color: var(--accent); background: var(--accent-soft) }
+.drop b { font: 700 16px/1.2 var(--display) }
+#wave { width: 100%; height: 86px; display: block; border-radius: 10px; background: var(--raised); border: 1px solid var(--line) }
+.steps-list { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--muted); display: flex; flex-direction: column; gap: 2px }
+.monitor { position: sticky; top: 76px; background: var(--monitor); color: var(--monitor-fg); border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.screen { display: flex; justify-content: center }
+#c { display: block; max-width: 100%; max-height: 58vh; border-radius: 12px; background: #000 }
+.transport { display: flex; align-items: center; gap: 10px }
+.transport button { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-fg); font-size: 15px; cursor: pointer }
+.transport input { flex: 1; min-width: 0; accent-color: var(--accent) }
+.time { font: 600 13px/1 var(--body); font-variant-numeric: tabular-nums; min-width: 84px; text-align: right; color: #c9c6c0 }
+.meta { color: #a9a6a0; font-size: 12.5px; margin: 0 }
+.strip-head { display: flex; justify-content: space-between; align-items: baseline; font: 600 13px/1 var(--body); color: #c9c6c0 }
+.strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin }
+.shot { flex: none; width: 96px; text-align: left; border: 2px solid transparent; background: #1e2127; border-radius: 10px; padding: 4px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font: inherit; color: #e9e6e0 }
+.shot canvas { width: 100%; height: auto; border-radius: 6px; display: block; background: #000 }
+.shot .cap { display: flex; justify-content: space-between; font: 600 11px/1.2 var(--body); color: #a9a6a0; font-variant-numeric: tabular-nums }
+.shot p { margin: 0; font-size: 11.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.shot[aria-current="true"] { border-color: var(--accent) }
+.export { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #2a2e35; padding-top: 12px }
+.bar { height: 6px; border-radius: 99px; background: #2a2e35; overflow: hidden } .bar i { display: block; height: 100%; width: 0; background: var(--accent) }
+.export .hint { color: #a9a6a0 } .export video { width: 100%; border-radius: 10px; background: #000 }
+@media (max-width: 920px) {
+  .page { grid-template-columns: minmax(0, 1fr) } .monitor { order: -1; position: static } .intro { order: -2 }
+  #c { max-height: 46vh } .tabs button { padding: 8px 9px }
+}
+@media (max-width: 520px) { .brand span { display: none } .maker { grid-template-columns: minmax(0, 1fr) } .maker canvas { width: 100%; height: 140px } }
 </style>
 
-<div class="wrap">
-  <header>
-    <h1>สตูดิโอทำคลิป</h1>
-    <p>เริ่มจากเลือกธีมเรื่อง ระบบจะตั้งตัวละคร ฉาก สไตล์ภาพ และวิธีเขียนบทให้เข้ากับธีม แล้วให้ AI คิดฮุกและเขียนบทไวรัลที่แก้ไขได้ ภาพทั้งหมดวาดสดด้วยโค้ดชุดเดียวกับที่ใช้เรนเดอร์วิดีโอจริง</p>
-  </header>
+<header class="topbar"><div class="topbar-in">
+  <div class="brand"><i></i><span>Panaphon Studio</span></div>
+  <nav class="tabs" aria-label="ขั้นตอน">
+    <button type="button" data-go="step-theme"><b>1</b>ธีม</button>
+    <button type="button" data-go="step-script"><b>2</b>บท</button>
+    <button type="button" data-go="step-cast"><b>3</b>ตัวละครและฉาก</button>
+    <button type="button" data-go="step-look"><b>4</b>สไตล์และจอ</button>
+    <button type="button" data-go="step-audio"><b>5</b>เสียงและส่งออก</button>
+  </nav>
+</div></header>
 
-  <section class="studio">
-    <div class="steps">
-      <div class="card" id="sec-theme">
-        <div class="card-head"><h2>เลือกธีมเรื่อง</h2></div>
-        <div class="chips" id="cats"></div>
-        <div class="themes" id="themes"></div>
-        <p class="hint" id="theme-desc"></p>
+<main class="page">
+  <div class="intro">
+    <h1>สตูดิโอทำคลิปสั้นด้วยโค้ด</h1>
+    <p>เลือกธีม ให้ AI คิดฮุกและเขียนบทไวรัล สร้างตัวละครกับฉากตามเรื่อง แล้วใส่ไฟล์เสียงให้ระบบตัดช็อตตามจังหวะพูดและบันทึกเป็นวิดีโอ ภาพทุกเฟรมวาดสดด้วยเอนจินเดียวกับที่ใช้เรนเดอร์จริง</p>
+  </div>
+
+  <div class="steps">
+    <section class="card" id="step-theme">
+      <div class="card-head"><h2><span class="num">1</span>เลือกธีมเรื่อง</h2></div>
+      <div class="chips" id="cats"></div>
+      <div class="themes" id="themes"></div>
+      <div class="theme-note" id="theme-note"></div>
+    </section>
+
+    <section class="card" id="step-script">
+      <div class="card-head"><h2><span class="num">2</span>บทและเรื่อง</h2>
+        <div class="tools"><label class="btn" for="img-story">ใส่ภาพแรงบันดาลใจ</label><button class="btn ai" type="button" data-ai="ideas">AI เสนอไอเดีย</button></div></div>
+      <input type="file" id="img-story" accept="image/*"><div class="thumb" id="thumb-story" hidden></div>
+      <div class="field"><label class="label" for="idea">ไอเดียคลิป</label><textarea id="idea" rows="2"></textarea></div>
+      <p class="ai-note" id="note-ideas" hidden></p>
+      <div class="chips" id="ideas"></div>
+      <div class="field"><span class="label">ความยาว</span><div class="chips" id="lengths"></div></div>
+
+      <h3 class="sub-h"><em>ก.</em> ฮุก 3 วินาทีแรก</h3>
+      <button class="btn primary" type="button" data-ai="hooks">AI คิดฮุก 6 แบบ</button>
+      <p class="ai-note" id="note-hooks" hidden></p>
+      <div class="hooks" id="hooks"></div>
+
+      <h3 class="sub-h"><em>ข.</em> บทเต็ม แก้ไขได้ทุกบรรทัด</h3>
+      <button class="btn primary" type="button" data-ai="script">AI เขียนบทไวรัลจากฮุกที่เลือก</button>
+      <p class="ai-note" id="note-story" hidden></p>
+      <textarea id="script" class="script" rows="16" spellcheck="false" aria-label="บท"></textarea>
+      <div class="tools">
+        <button class="btn" type="button" id="apply-script">อัปเดตพรีวิวจากบท</button>
+        <button class="btn" type="button" id="undo-script" hidden>ย้อนบทก่อนหน้า</button>
+        <button class="btn" type="button" id="copy-script">คัดลอกบท</button>
       </div>
+      <ul class="warns" id="warns" hidden></ul>
+      <details><summary>วิธีเขียนบทด้วยมือ</summary>
+        <p class="hint">แต่ละช็อตขึ้นต้นด้วย <code>[เลขช็อต] หน้าที่ · วินาที</code> ตามด้วย <code>ตัวละคร:</code> (ชื่อ=ท่า คั่นด้วยจุลภาค) <code>บรรยาย:</code> (เสียงพากย์และซับ) <code>บนจอ:</code> (ตัวหนังสือใหญ่ 3-7 คำ) คั่นช็อตด้วย <code>---</code> ชื่อใช้ไทยหรืออังกฤษก็ได้ รวมถึงตัวละครที่สร้างเองในขั้นที่ 3 ท่าที่ใช้ได้: ยืน เดิน วิ่ง กระโดด นอน ตกใจ ดีใจ เศร้า พูด</p>
+      </details>
 
-      <div class="card" id="sec-story">
-        <div class="card-head"><h2><span class="n">1</span> บทและเรื่อง</h2>
-          <div class="tools"><label class="btn" for="img-story">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="ideas">AI เสนอไอเดีย</button></div></div>
-        <label class="hint" for="idea">ไอเดียคลิป</label>
-        <textarea id="idea" rows="2" placeholder="เช่น นิทานสอนใจเรื่องความซื่อสัตย์ หรือ ประวัติข้าวไทยใน 30 วินาที">เด็กชายทำกระเป๋าเงินหายในตลาด แล้วแม่ค้าใจดีช่วยตามหาเจ้าของ</textarea>
-        <input type="file" id="img-story" accept="image/*">
-        <div class="thumb" id="thumb-story" hidden></div>
-        <p class="ai-note" id="note-ideas" hidden></p>
-        <div class="chips" id="ideas"></div>
-        <div class="opts">
-          <div class="opt"><span class="label">ความยาว</span><div class="chips" id="lengths"></div></div>
-        </div>
+      <h3 class="sub-h"><em>ค.</em> ตรวจก่อนโพสต์</h3>
+      <button class="btn primary" type="button" data-ai="qa">AI ตรวจบท</button>
+      <p class="ai-note" id="note-qa" hidden></p>
+      <div class="qa" id="qa" hidden></div>
+      <div class="extras" id="extras" hidden></div>
+      <div class="field"><span class="label">เล่นบนจอ</span><div class="chips" id="stories"></div></div>
+    </section>
 
-        <div class="phase"><b>ก.</b> ฮุก 3 วินาทีแรก</div>
-        <button class="btn primary" type="button" data-ai="hooks">AI คิดฮุก 6 แบบ</button>
-        <p class="ai-note" id="note-hooks" hidden></p>
-        <div class="hooks" id="hooks"></div>
+    <section class="card" id="step-cast">
+      <div class="card-head"><h2><span class="num">3</span>ตัวละครและฉาก</h2>
+        <div class="tools"><label class="btn" for="img-make">ใส่ภาพอ้างอิง</label><button class="btn" type="button" id="add-char">สร้างตัวละครเอง</button><button class="btn" type="button" id="add-scene">สร้างฉากเอง</button></div></div>
+      <input type="file" id="img-make" accept="image/*"><div class="thumb" id="thumb-make" hidden></div>
+      <button class="btn primary" type="button" data-ai="make">AI สร้างตัวละครและฉากตามบท</button>
+      <p class="ai-note" id="note-make" hidden></p>
+      <div class="makers" id="makers"></div>
+      <h3 class="sub-h">นักแสดง <small class="hint" id="cast-count"></small><span style="flex:1"></span><button class="btn ai" type="button" data-ai="cast">AI เลือกให้</button></h3>
+      <p class="ai-note" id="note-cast" hidden></p>
+      <div class="cast" id="cast"></div>
+      <p class="hint">แตะเพื่อเลือกได้สูงสุด 4 ตัว ตัวที่เลือกใช้ตอน AI เขียนบท ส่วนในบทพิมพ์ชื่อตัวไหนก็ได้</p>
+      <h3 class="sub-h">ฉาก</h3>
+      <div class="chips" id="scenes"></div>
+    </section>
 
-        <div class="phase"><b>ข.</b> บทเต็ม (แก้ไขได้ทุกบรรทัด)</div>
-        <button class="btn primary" type="button" data-ai="script">AI เขียนบทไวรัลจากฮุกที่เลือก</button>
-        <p class="ai-note" id="note-story" hidden></p>
-        <textarea id="script" class="script" rows="16" spellcheck="false" aria-label="บท"></textarea>
-        <div class="tools">
-          <button class="btn" type="button" id="apply-script">อัปเดตพรีวิวจากบท</button>
-          <button class="btn" type="button" id="undo-script" hidden>ย้อนบทก่อนหน้า</button>
-          <button class="btn" type="button" id="copy-script">คัดลอกบท</button>
-        </div>
-        <ul class="warns" id="warns" hidden></ul>
-        <details class="howto"><summary>วิธีเขียนบทด้วยมือ</summary>
-          <p class="hint">แต่ละช็อตขึ้นต้นด้วย <code>[เลขช็อต] หน้าที่ · วินาที</code> แล้วตามด้วยบรรทัด <code>ตัวละคร:</code> (ชื่อ=ท่า คั่นด้วยจุลภาค) <code>บรรยาย:</code> (เสียงพากย์และซับ) <code>บนจอ:</code> (ตัวหนังสือใหญ่ 3-7 คำ) คั่นช็อตด้วย <code>---</code></p>
-          <p class="hint">ชื่อใช้ได้ทั้งไทยและอังกฤษ เช่น เด็กชาย หรือ boy ท่าที่ใช้ได้: ยืน เดิน วิ่ง กระโดด นอน ตกใจ ดีใจ เศร้า พูด</p>
-        </details>
+    <section class="card" id="step-look">
+      <div class="card-head"><h2><span class="num">4</span>สไตล์ภาพและสัดส่วนจอ</h2>
+        <div class="tools"><label class="btn" for="img-look">ใส่ภาพสไตล์ที่ชอบ</label><button class="btn ai" type="button" data-ai="look">AI เลือกสไตล์</button></div></div>
+      <input type="file" id="img-look" accept="image/*"><div class="thumb" id="thumb-look" hidden></div>
+      <p class="ai-note" id="note-look" hidden></p>
+      <div class="chips" id="looks"></div>
+      <h3 class="sub-h">สัดส่วนจอ<span style="flex:1"></span><label class="btn" for="img-aspect">วัดจากภาพ</label><button class="btn ai" type="button" data-ai="aspect">AI แนะนำ</button></h3>
+      <input type="file" id="img-aspect" accept="image/*">
+      <p class="ai-note" id="note-aspect" hidden></p>
+      <div class="aspects" id="aspects"></div>
+    </section>
 
-        <div class="phase"><b>ค.</b> ตรวจก่อนโพสต์</div>
-        <button class="btn primary" type="button" data-ai="qa">AI ตรวจบท</button>
-        <p class="ai-note" id="note-qa" hidden></p>
-        <div class="qa" id="qa" hidden></div>
-        <div class="extras" id="extras" hidden></div>
+    <section class="card" id="step-audio">
+      <div class="card-head"><h2><span class="num">5</span>ทำคลิปจากไฟล์เสียง</h2></div>
+      <label class="drop" id="drop" for="audio-file" tabindex="0"><b>วางไฟล์เสียงพากย์ที่นี่ หรือแตะเพื่อเลือก</b><span class="hint">MP3, WAV, M4A · ไฟล์อยู่ในเบราว์เซอร์นี้เท่านั้น ไม่ถูกอัปโหลด</span></label>
+      <input type="file" id="audio-file" accept="audio/*">
+      <canvas id="wave" width="1200" height="172" hidden></canvas>
+      <p class="hint" id="audio-info" hidden></p>
+      <div class="field"><label class="label" for="transcript">ข้อความที่พูดในไฟล์เสียง (ดึงจากบทให้อัตโนมัติ แก้ได้)</label><textarea id="transcript" rows="4"></textarea></div>
+      <button class="btn primary" type="button" id="auto-audio" disabled>ทำคลิปจากเสียงอัตโนมัติ</button>
+      <p class="ai-note" id="note-audio" hidden></p>
+      <ol class="steps-list"><li>หาช่วงหยุดหายใจในเสียง แล้วตัดเป็นช็อตละ 2.5-6 วินาที</li><li>จับคู่ข้อความกับแต่ละช็อตตามจังหวะพูด</li><li>AI เลือกตัวละคร ท่า และตัวหนังสือบนจอให้ทุกช็อต (ถ้าใช้ AI ไม่ได้ ระบบจัดให้เองจากบท)</li><li>วิดีโอเล่นตรงกับเสียง กด "บันทึกเป็นวิดีโอ" ที่จอพรีวิวเพื่อได้ไฟล์</li></ol>
+    </section>
+  </div>
 
-        <span class="label">เล่นบนจอ</span>
-        <div class="chips" id="stories"></div>
-      </div>
-
-      <div class="card" id="sec-board">
-        <div class="card-head"><h2>สตอรี่บอร์ด <small class="hint" id="board-sum"></small></h2></div>
-        <div class="board" id="board"></div>
-        <p class="hint">ภาพตัวอย่างของแต่ละช็อตตามตัวเลือกปัจจุบัน แตะช็อตเพื่อเล่นจากตรงนั้น</p>
-      </div>
-
-      <div class="card" id="sec-cast">
-        <div class="card-head"><h2><span class="n">2</span> ตัวละคร <small class="hint" id="cast-count"></small></h2>
-          <div class="tools"><label class="btn" for="img-cast">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="cast">AI ช่วยคิด</button></div></div>
-        <input type="file" id="img-cast" accept="image/*">
-        <div class="thumb" id="thumb-cast" hidden></div>
-        <p class="ai-note" id="note-cast" hidden></p>
-        <div class="cast" id="cast"></div>
-        <p class="hint">แตะเพื่อเลือก ได้สูงสุด 4 ตัว ตัวละครที่เลือกจะขึ้นจอทันที</p>
-      </div>
-
-      <div class="card" id="sec-scene">
-        <div class="card-head"><h2><span class="n">3</span> ฉาก</h2>
-          <div class="tools"><label class="btn" for="img-scene">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="scene">AI ช่วยคิด</button></div></div>
-        <input type="file" id="img-scene" accept="image/*">
-        <div class="thumb" id="thumb-scene" hidden></div>
-        <p class="ai-note" id="note-scene" hidden></p>
-        <div class="chips" id="scenes"></div>
-      </div>
-
-      <div class="card" id="sec-look">
-        <div class="card-head"><h2><span class="n">4</span> สไตล์ภาพ</h2>
-          <div class="tools"><label class="btn" for="img-look">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="look">AI ช่วยคิด</button></div></div>
-        <input type="file" id="img-look" accept="image/*">
-        <div class="thumb" id="thumb-look" hidden></div>
-        <p class="ai-note" id="note-look" hidden></p>
-        <div class="chips" id="looks"></div>
-      </div>
-
-      <div class="card" id="sec-aspect">
-        <div class="card-head"><h2><span class="n">5</span> สัดส่วนจอ</h2>
-          <div class="tools"><label class="btn" for="img-aspect">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="aspect">AI ช่วยคิด</button></div></div>
-        <input type="file" id="img-aspect" accept="image/*">
-        <div class="thumb" id="thumb-aspect" hidden></div>
-        <p class="ai-note" id="note-aspect" hidden></p>
-        <div class="aspects" id="aspects"></div>
-      </div>
-
+  <aside class="monitor" aria-label="จอพรีวิว">
+    <div class="screen"><canvas id="c" width="360" height="640"></canvas></div>
+    <div class="transport">
+      <button id="play" type="button" aria-label="หยุด">❚❚</button>
+      <input id="seek" type="range" min="0" max="1000" value="0" aria-label="ตำแหน่งในคลิป">
+      <span class="time" id="time">0.0 / 0.0 วิ</span>
     </div>
-
-    <div class="stagebox">
-      <div class="screen"><canvas id="c" width="360" height="640"></canvas></div>
-      <div class="transport">
-        <button id="play" type="button" aria-label="หยุด">❚❚</button>
-        <input id="seek" type="range" min="0" max="1000" value="0" aria-label="ตำแหน่งในคลิป">
-        <span class="time" id="time">0.0 / 0.0 วิ</span>
-      </div>
-      <p class="meta" id="meta"></p>
+    <p class="meta" id="meta"></p>
+    <div class="strip-head"><span>สตอรี่บอร์ด</span><span id="board-sum"></span></div>
+    <div class="strip" id="board"></div>
+    <div class="export">
+      <button class="btn primary big" type="button" id="export">บันทึกเป็นวิดีโอ</button>
+      <div class="bar" id="export-bar" hidden><i></i></div>
+      <p class="hint" id="export-note">บันทึกตามเวลาจริงพร้อมเสียง (ถ้ามี) ระหว่างบันทึกอย่าสลับแท็บ</p>
+      <video id="export-video" controls playsinline hidden></video>
     </div>
-  </section>
-</div>
+  </aside>
+</main>
 
 <script src="characters.js"></script>
 <script src="looks.js"></script>
@@ -231,585 +257,4 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
 <script src="scenes.js"></script>
 <script src="props.js"></script>
 <script src="stage.js"></script>
-<script>
-(function () {
-  const $ = (id) => document.getElementById(id);
-  const CH = CharLib.CHARACTERS, POSES = CharLib.POSES, LOOKS = LookLib.LOOKS, SCENES = SceneLib.SCENES;
-  const ANIMAL_TH = { rabbit: 'กระต่าย', tortoise: 'เต่า', cat: 'แมว', dog: 'หมา', fox: 'จิ้งจอก', bear: 'หมี', pig: 'หมู', mouse: 'หนู', panda: 'แพนด้า', frog: 'กบ' };
-  const nameOf = (id) => CH[id].label || ANIMAL_TH[id] || id;
-  const SCENE_TH = { meadow: 'ทุ่งหญ้า', sunset: 'พระอาทิตย์ตก', night: 'กลางคืน', winter: 'หิมะ', desert: 'ทะเลทราย', beach: 'ชายหาด', forest: 'ป่า', city: 'เมือง' };
-  const ASPECTS = { '9:16': { size: [360, 640], th: 'แนวตั้ง', use: 'TikTok, Reels, Shorts' }, '16:9': { size: [640, 360], th: 'แนวนอน', use: 'YouTube, Facebook' }, '1:1': { size: [480, 480], th: 'จัตุรัส', use: 'โพสต์ฟีด' } };
-  const SAMPLES = [
-    { id: 'people', file: 'stories/people.json', label: 'ตลาดเช้า' },
-    { id: 'rabbit', file: 'stories/rabbit-tortoise.json', label: 'กระต่ายกับเต่า' },
-    { id: 'showcase', file: 'stories/showcase.json', label: 'เพื่อนในป่า' }
-  ];
-  const MAX_CAST = 4;
-  const state = { theme: 'tale', length: 30, hooks: [], hook: -1, scriptAuto: true, prevScript: null, cast: ['boy', 'vendor'], scene: 'city', look: 'pastel', aspect: '9:16', storyId: 'mine', stories: {}, t: 0, playing: true, total: 1, images: {} };
-
-  /* ---------- story building: AI gives words + who/pose; the page owns positions and camera ---------- */
-  const SPACING = 230;
-  function layoutShot(shot, i) {
-    const ids = shot.actors.map((a) => a.id).filter((id) => CH[id]).slice(0, MAX_CAST);
-    const n = Math.max(1, ids.length), dur = Math.min(8, Math.max(2.5, +shot.dur || 4)), actors = {};
-    ids.forEach((id, k) => {
-      const a = shot.actors.find((x) => x.id === id), pose = POSES.includes(a.pose) ? a.pose : 'idle';
-      const x = (k - (n - 1) / 2) * SPACING, moving = pose === 'walk' || pose === 'run';
-      actors[id] = { x: moving ? [[0, x - 70], [dur, x + 70]] : x, pose, ...(k >= n / 2 && !moving && n > 1 ? { facing: -1 } : {}) };
-    });
-    const span = (n - 1) * SPACING + 360, w = Math.max(760, span + 140);
-    return { id: 's' + (i + 1), dur, ...(shot.title ? { title: String(shot.title).slice(0, 40) } : {}), text: String(shot.text || '').slice(0, 120), cam: [[0, 15, -110, w, Math.max(500, w * 0.55)]], actors };
-  }
-  function buildStory(title, shots) {
-    return { title: String(title || 'คลิปของฉัน').slice(0, 60), track: false, scene: state.scene, style: state.look, shots: shots.map(layoutShot) };
-  }
-  /* ---------- the script: editable text is the source of truth for "บทของฉัน" ---------- */
-  const POSE_TH = { idle: 'ยืน', walk: 'เดิน', run: 'วิ่ง', hop: 'กระโดด', sleep: 'นอน', shock: 'ตกใจ', happy: 'ดีใจ', sad: 'เศร้า', talk: 'พูด' };
-  const POSE_ID = Object.fromEntries(Object.entries(POSE_TH).map(([k, v]) => [v, k]));
-  const CHAR_ID = Object.fromEntries(Object.keys(CH).map((id) => [nameOf(id), id]));
-  /* ---------- themes: each one presets the whole studio and steers the AI writer ---------- */
-  const THEMES = [
-    { id: 'tale', cat: 'story', why: 'คลิปเล่าเรื่องดีๆ ยาว 1 นาทีขึ้นไปได้รับการดันมากขึ้นในปี 2026', label: 'เรื่องเล่า', desc: 'เรื่องชีวิต นิทาน ข้อคิด อบอุ่นชวนติดตาม', look: 'paper', scene: 'meadow', cast: ['narrator', 'boy', 'grandma'], length: 30, tone: 'อบอุ่น ชวนติดตาม',
-      examples: ['คุณยายเล่าตำนานต้นไทรหน้าบ้านที่ไม่มีใครกล้าตัด', 'เด็กชายช่วยแมวจรตัวหนึ่ง แล้วชีวิตเปลี่ยนไป', 'ของขวัญชิ้นสุดท้ายจากพ่อ'],
-      archetypes: 'ปลายเรื่องก่อน, click-to-unpause, กั๊กคำตอบ, คำถามที่ทุกคนเคยสงสัย',
-      rules: 'ตัวละครหลักชัด มีเป้าหมายและอุปสรรค อารมณ์ขึ้นลง จบด้วยข้อคิดหรือหักมุมที่อบอุ่น',
-      starter: { title: 'ต้นไทรที่ไม่มีใครกล้าตัด', shots: [
-        { role: 'ฮุก', dur: 3, onscreen: 'ห้ามตัดเด็ดขาด', text: 'ต้นไทรต้นนี้… ไม่มีใครกล้าตัดมาห้าสิบปี', actors: [{ id: 'boy', pose: 'shock' }] },
-        { role: 'ตั้งปม', dur: 4, onscreen: 'ยายรู้ความลับ', text: 'แต่คุณยายรู้เหตุผล… ที่ไม่เคยเล่าให้ใครฟัง', actors: [{ id: 'grandma', pose: 'talk' }, { id: 'boy', pose: 'idle' }] },
-        { role: 'เฉลย', dur: 4, onscreen: 'ปู่ปลูกไว้ให้ยาย', text: 'ต้นไม้นี้… คุณปู่ปลูกไว้ในวันที่ขอยายแต่งงาน', actors: [{ id: 'grandma', pose: 'happy' }, { id: 'boy', pose: 'happy' }] },
-        { role: 'CTA', dur: 3, onscreen: 'บ้านคุณมีไหม?', text: 'บ้านคุณมีของที่ห้ามทิ้งไหม เล่าในคอมเมนต์', actors: [{ id: 'narrator', pose: 'talk' }] }] } },
-    { id: 'ghost', cat: 'mystery', why: 'เรื่องสยองและเรื่องลึกลับแบบแอนิเมชันเป็นแนวช่องไม่เปิดหน้าที่เติบโต', label: 'เรื่องผี', desc: 'ตำนาน เรื่องหลอน บรรยากาศเย็นยะเยือก', look: 'noir', scene: 'night', cast: ['narrator', 'girl', 'grandma'], length: 45, tone: 'หลอน เย็นยะเยือก จังหวะช้า',
-      examples: ['ห้องพักโรงแรมที่ไม่มีเลข 4', 'เสียงเรียกชื่อตอนตีสามในหมู่บ้าน', 'กระจกบานเก่าในบ้านยาย'],
-      archetypes: 'ภาพปริศนา, ปลายเรื่องก่อน, กั๊กคำตอบ, click-to-unpause',
-      rules: 'บรรยากาศหลอนไต่ระดับช้าๆ ใช้ความเงียบและ "…" บ่อย เปิดด้วยภาพหรือเสียงปริศนา ไม่ใช้ความรุนแรงหรือภาพสยองเกินไป จบด้วยปมที่ยังค้างหรือหักมุมสุดท้าย บอกชัดว่าเป็นเรื่องเล่าหรือตำนาน ห้ามอ้างว่าเป็นเรื่องจริงถ้าตรวจสอบไม่ได้',
-      starter: { title: 'กระจกบานเก่าในบ้านยาย', shots: [
-        { role: 'ฮุก', dur: 3, onscreen: 'อย่าส่องตอนตีสาม', text: 'ยายห้ามส่องกระจกบานนี้… ตอนตีสาม', actors: [{ id: 'grandma', pose: 'talk' }] },
-        { role: 'ตั้งปม', dur: 4, onscreen: 'แต่หนูส่อง', text: 'แต่คืนนั้น… หลานสาวแอบลุกมาส่อง', actors: [{ id: 'girl', pose: 'walk' }] },
-        { role: 'หักมุม', dur: 4, onscreen: 'เงาไม่ขยับตาม', text: 'เงาในกระจก… ไม่ขยับตามเธอ', actors: [{ id: 'girl', pose: 'shock' }] },
-        { role: 'CTA', dur: 3, onscreen: 'คุณกล้าส่องไหม?', text: 'ถ้าเป็นคุณ… จะกล้าส่องไหม', actors: [{ id: 'narrator', pose: 'talk' }] }] } },
-    { id: 'origin', cat: 'learn', why: 'คำถาม "ทำไม" ตรงกับสิ่งที่คนค้นหา คลิปที่ตอบคำถามแบบนี้มีคนดูจนจบมาก', label: 'ประวัติความเป็นมา', desc: 'ที่มาของสิ่งรอบตัว ประเพณี สถานที่', look: 'thai', scene: 'meadow', cast: ['narrator', 'teacher', 'vendor'], length: 45, tone: 'ชวนรู้ น่าเชื่อถือ',
-      examples: ['ที่มาของข้าวเหนียวมะม่วง', 'ทำไมคนไทยไหว้แทนการจับมือ', 'ทำไมกรุงเทพฯ มีชื่อเต็มยาวมาก'],
-      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ครู, สวนกระแส, ตัวเลขแปลก',
-      rules: 'เปิดด้วยคำถามหรือข้อเท็จจริงที่ขัดความเชื่อ แล้วเล่าที่มาตามลำดับเวลา ใส่ปี ชื่อ สถานที่ที่ตรวจสอบได้ แยกข้อเท็จจริงกับตำนานหรือทฤษฎีให้ชัด ปิดด้วยการเชื่อมกับปัจจุบัน',
-      starter: { title: 'ทำไมคนไทยไหว้', shots: [
-        { role: 'ฮุก', dur: 3, onscreen: 'ไหว้มาจากไหน?', text: 'ทำไมคนไทย… ไหว้แทนการจับมือ', actors: [{ id: 'teacher', pose: 'talk' }] },
-        { role: 'ตั้งปม', dur: 4, onscreen: 'มากกว่ามารยาท', text: 'แต่การไหว้… มีความหมายมากกว่ามารยาท', actors: [{ id: 'teacher', pose: 'idle' }, { id: 'vendor', pose: 'happy' }] },
-        { role: 'เฉลย', dur: 5, onscreen: 'มือเปล่า = ไม่มีอาวุธ', text: 'มีทฤษฎีว่าการพนมมือ… คือการแสดงว่าไม่ได้ถืออาวุธ', actors: [{ id: 'narrator', pose: 'talk' }] },
-        { role: 'CTA', dur: 3, onscreen: 'เซฟไว้เล่าต่อ', text: 'เซฟไว้… เล่าให้เพื่อนต่างชาติฟัง', actors: [{ id: 'teacher', pose: 'happy' }] }] } },
-    { id: 'doc', cat: 'learn', why: 'สารคดีสั้นแบบเล่าเรื่องดูยาวได้ และเหมาะกับช่องไม่เปิดหน้า', label: 'สารคดี', desc: 'เรื่องจริง ปริศนา วิทยาศาสตร์ เล่าแบบสารคดี', look: 'watercolor', scene: 'desert', cast: ['narrator', 'detective', 'doctor'], length: 60, tone: 'สุขุม หนักแน่น จังหวะช้า',
-      examples: ['เมืองที่คนทั้งเมืองหายไปในคืนเดียว', 'หมอที่ค้นพบยาเพนิซิลลินโดยบังเอิญ', 'ปริศนาเสียงประหลาดใต้ทะเลลึก'],
-      archetypes: 'ข้อเท็จจริงช็อก, ภาพปริศนา, ตัวเลขขัดสามัญสำนึก, คำถามที่ทุกคนเคยสงสัย, ปลายเรื่องก่อน',
-      rules: 'โครง 6 จุด: ฮุก → ตั้งปม "แต่ไม่มีใครรู้ว่า…" → ย้อนเล่าตามเวลาพร้อมรายละเอียดจริง (ปี ชื่อ ตัวเลข) → หักมุมราว 70% → เฉลยหรือบอกตรงๆ ว่ายังไม่มีใครรู้ → CTA เดียว พากย์ช้าราว 2.2 คำต่อวินาที ห้ามแต่งตัวเลขหรือคำพูดของคนจริง ถ้าไม่แน่ใจให้ตัดทิ้ง',
-      starter: { title: 'ราที่ช่วยคนนับล้าน', shots: [
-        { role: 'ฮุก', dur: 3, onscreen: 'ราช่วยโลก', text: 'ราบนจานที่ลืมล้าง… ช่วยชีวิตคนนับล้าน', actors: [{ id: 'doctor', pose: 'shock' }] },
-        { role: 'ตั้งปม', dur: 4, onscreen: 'ปี 1928', text: 'ปี 1928… หมอคนหนึ่งกลับจากพักร้อน', actors: [{ id: 'doctor', pose: 'walk' }] },
-        { role: 'หักมุม', dur: 5, onscreen: 'เชื้อโรคหายไป', text: 'แต่รอบราบนจาน… เชื้อโรคหายไปหมด', actors: [{ id: 'doctor', pose: 'talk' }, { id: 'detective', pose: 'shock' }] },
-        { role: 'CTA', dur: 3, onscreen: 'เซฟไว้', text: 'เซฟไว้… ตอนหน้าเล่าว่าทำไมเกือบไม่มีใครเชื่อ', actors: [{ id: 'narrator', pose: 'talk' }] }] } },
-    { id: 'cartoon', cat: 'story', why: 'นิทานแอนิเมชันที่มีข้อคิดเป็นแนวที่คนดูนานและรายได้ต่อวิวค่อนข้างดี', label: 'การ์ตูน', desc: 'สัตว์น่ารัก มุกตลก เด็กดูได้ทั้งบ้าน', look: 'comic', scene: 'forest', cast: ['rabbit', 'tortoise', 'fox'], length: 30, tone: 'สนุก สดใส มุกจังหวะเร็ว',
-      examples: ['กระต่ายอยากบินได้เหมือนนก', 'หมูน้อยเปิดร้านขนมในป่า', 'หมีขี้เซาตื่นสายในวันสำคัญ'],
-      archetypes: 'click-to-unpause, นักมายากล, กั๊กคำตอบ, ปลายเรื่องก่อน',
-      rules: 'ตลก สดใส ตัวละครสัตว์มีนิสัยชัด มีมุกที่เข้าใจได้ในวินาทีเดียว เด็กดูได้ ไม่รุนแรง ข้อคิดสั้นๆ ตอนจบ',
-      starter: { title: 'กระต่ายอยากบินได้', shots: [
-        { role: 'ฮุก', dur: 3, onscreen: 'กระต่ายจะบิน!', text: 'วันนี้กระต่าย… จะบินให้ได้!', actors: [{ id: 'rabbit', pose: 'hop' }] },
-        { role: 'เร่ง', dur: 4, onscreen: 'ครั้งที่ 37', text: 'กระโดดครั้งที่สามสิบเจ็ด… ยังไม่ลอยเลย', actors: [{ id: 'rabbit', pose: 'sad' }, { id: 'fox', pose: 'happy' }] },
-        { role: 'หักมุม', dur: 4, onscreen: 'เต่ามีไอเดีย', text: 'แต่เต่ามีไอเดีย… ที่ไม่มีใครคาด', actors: [{ id: 'tortoise', pose: 'talk' }, { id: 'rabbit', pose: 'shock' }] },
-        { role: 'CTA', dur: 3, onscreen: 'เดาสิไอเดียอะไร', text: 'เดาสิ… เต่าคิดอะไรไว้ พิมพ์ในคอมเมนต์', actors: [{ id: 'tortoise', pose: 'happy' }, { id: 'rabbit', pose: 'happy' }] }] } },
-    { id: 'microdrama', cat: 'story', why: 'ละครสั้นเป็นตอนเป็นแนวที่โตแรงที่สุดตอนนี้ Deloitte คาดรายได้ปี 2026 เกิน 7.8 พันล้านดอลลาร์', label: 'ละครสั้นเป็นตอน', desc: 'ดราม่าครอบครัว ความรัก ตอนละนาที จบค้างทุกตอน', look: 'pastel', scene: 'city', cast: ['mom', 'dad', 'girl'], length: 60, tone: 'ดราม่า เข้มข้น ลุ้นตอนต่อ',
-      examples: ['ลูกสาวพบว่าพ่อเก็บความลับเรื่องบ้านไว้ 20 ปี', 'แม่ค้าข้างบ้านคือแม่แท้ๆ ที่ตามหามาตลอด', 'จดหมายที่ส่งผิดบ้านเปลี่ยนชีวิตสองครอบครัว'],
-      archetypes: 'click-to-unpause, ปลายเรื่องก่อน, กั๊กคำตอบ',
-      rules: 'เขียนเป็น "ตอนที่ 1" ของซีรีส์ เปิดกลางเหตุการณ์ขัดแย้ง ตัวละครมีเป้าหมายและความลับ อารมณ์ไต่ขึ้นทุกช็อต จบด้วย cliffhanger ที่ทำให้อยากดูตอนต่อไป CTA คือ "ติดตามตอน 2"' },
-    { id: 'pov', cat: 'story', why: 'คลิป POV ที่เล่าจากมุมมองสมมติยังติดอันดับเทรนด์ TikTok', label: 'POV สมมติ', desc: '"POV: คุณคือ..." พาคนดูเข้าไปอยู่ในเหตุการณ์', look: 'minimal', scene: 'city', cast: ['narrator', 'boy', 'teacher'], length: 30, tone: 'สนุก จับใจ เข้าถึงง่าย',
-      examples: ['POV: คุณตื่นมาแล้วทุกคนพูดความในใจออกมาดังๆ', 'POV: คุณเป็นนักเรียนคนเดียวที่ทำการบ้านมา', 'POV: คุณได้ยินแมวที่บ้านพูดครั้งแรก'],
-      archetypes: 'click-to-unpause, นักมายากล, ปลายเรื่องก่อน',
-      rules: 'ช็อตแรกขึ้นตัวหนังสือ "POV: ..." ชัดเจน เล่าด้วยสรรพนาม "คุณ" ทั้งเรื่อง สถานการณ์ต้องเข้าใจได้ในวินาทีเดียวและคนดูรู้สึกว่าเกิดกับตัวเองได้ มีหักมุมหนึ่งครั้ง' },
-    { id: 'fable', cat: 'story', why: 'นิทานสั้นที่มีข้อคิดเหมาะกับครอบครัว คนดูซ้ำบ่อยและส่งต่อให้เด็ก', label: 'นิทานสอนใจ', desc: 'นิทานสัตว์แบบอีสป จบด้วยข้อคิดเดียว', look: 'pastel', scene: 'meadow', cast: ['rabbit', 'tortoise', 'bear'], length: 45, tone: 'อบอุ่น นุ่มนวล เหมาะกับเด็ก',
-      examples: ['หมีที่ไม่ยอมแบ่งน้ำผึ้งให้เพื่อน', 'กบที่คิดว่าบ่อของตัวเองใหญ่ที่สุดในโลก', 'หนูตัวเล็กช่วยราชสีห์ออกจากตาข่าย'],
-      archetypes: 'ปลายเรื่องก่อน, กั๊กคำตอบ, คำถามที่ทุกคนเคยสงสัย',
-      rules: 'ตัวละครสัตว์นิสัยชัด ความขัดแย้งเดียว ภาษาง่ายเด็กเข้าใจ จบด้วยข้อคิดประโยคเดียวที่จำง่าย ไม่รุนแรง' },
-    { id: 'funny', cat: 'story', why: 'คอนเทนต์ "เรียลๆ" เรื่องจริงในชีวิตที่หัวเราะด้วยกันได้ กำลังมาแรงในไทยปี 2026', label: 'ตลกชีวิตประจำวัน', desc: 'มุกที่ทุกคนเคยเจอ "คนไทยตอน..." ดูแล้วแท็กเพื่อน', look: 'comic', scene: 'city', cast: ['dad', 'mom', 'boy'], length: 15, tone: 'ฮา รู้สึกร่วม จังหวะเร็ว',
-      examples: ['แม่ตอนหาของไม่เจอ vs แม่ตอนเราหาของไม่เจอ', 'พ่อตอนบอกว่า "เดี๋ยวพ่อซ่อมเอง"', 'ตอนได้ยินว่าเงินเดือนออกพรุ่งนี้'],
-      archetypes: 'click-to-unpause, ตัวเลขแปลก, สวนกระแส',
-      rules: 'มุกเดียว เข้าใจได้ใน 1 วินาที เป็นสถานการณ์ที่คนไทยส่วนใหญ่เคยเจอ ใช้คอนทราสต์หรือการเกินจริงแบบน่ารัก จบด้วยพันช์ไลน์ ไม่ล้อปมด้อยหรือเหยียดใคร CTA ชวน "แท็กคนที่เป็นแบบนี้" ห้ามเด็ดขาด ให้ใช้ "คอมเมนต์ว่าบ้านคุณเป็นไหม" แทน' },
-    { id: 'mystery', cat: 'mystery', why: 'เรื่องปริศนาที่ยังไขไม่ได้ทำให้คนค้างคำถามและคอมเมนต์ทฤษฎีของตัวเอง', label: 'ปริศนาไขไม่ได้', desc: 'เหตุการณ์จริงที่ยังไม่มีคำตอบ ให้คนดูช่วยเดา', look: 'noir', scene: 'city', cast: ['detective', 'narrator', 'doctor'], length: 60, tone: 'ลึกลับ สุขุม ชวนคิด',
-      examples: ['เรือที่ลอยกลับมาโดยไม่มีลูกเรือสักคน', 'สัญญาณจากอวกาศ 72 วินาทีที่ไม่เคยมาอีกเลย', 'เมืองที่นาฬิกาทุกเรือนหยุดพร้อมกัน'],
-      archetypes: 'ข้อเท็จจริงช็อก, นักสืบ, ปลายเรื่องก่อน, กั๊กคำตอบ',
-      rules: 'ใช้เหตุการณ์ที่มีบันทึกจริงเท่านั้น แยกข้อเท็จจริงกับทฤษฎีชัดเจน ("มีทฤษฎีว่า...") เล่าเบาะแสทีละชิ้น วางทฤษฎีที่น่าเชื่อสุดไว้ท้าย และบอกตรงๆ ว่ายังไม่มีใครรู้คำตอบ CTA คือให้คอมเมนต์ทฤษฎีของตัวเอง' },
-    { id: 'belief', cat: 'mystery', why: 'เรื่องความเชื่อและเคล็ดลับแบบไทยเป็นเรื่องที่คนไทยคุยและส่งต่อกันมาก', label: 'ความเชื่อไทย', desc: 'มูเตลู เคล็ดลับโบราณ ข้อห้ามที่ยายเคยบอก', look: 'thai', scene: 'night', cast: ['grandma', 'vendor', 'girl'], length: 30, tone: 'ลึกลับ อบอุ่นแบบบ้านๆ',
-      examples: ['ทำไมยายห้ามตัดเล็บตอนกลางคืน', 'ความเชื่อเรื่องแมวดำเดินผ่านหน้า', 'ทำไมคนโบราณห้ามนอนหันหัวไปทางทิศตะวันตก'],
-      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ครู, สวนกระแส',
-      rules: 'นำเสนอในฐานะความเชื่อหรือคติชาวบ้าน ห้ามรับประกันผลเรื่องโชคลาภ ห้ามชวนซื้อของขลัง ถ้ามีคำอธิบายทางวิทยาศาสตร์หรือเหตุผลในชีวิตจริงให้เล่าด้วย ปิดด้วยคำถามให้คนเล่าความเชื่อบ้านตัวเอง' },
-    { id: 'explainer', cat: 'learn', why: 'คลิปอธิบายที่ตอบคำถามที่คนค้นหาได้ดูจนจบสูง และ Google เริ่มแสดงคลิปสั้นในผลค้นหา', label: 'อธิบายใน 1 นาที', desc: 'ความรู้รอบตัว "ทำไม..." "เกิดอะไรขึ้นเมื่อ..."', look: 'minimal', scene: 'meadow', cast: ['teacher', 'boy', 'girl'], length: 45, tone: 'ชัด กระชับ ฉลาดแบบเป็นกันเอง',
-      examples: ['ทำไมท้องฟ้าตอนเย็นเป็นสีส้ม', 'ทำไมเรามักง่วงหลังกินข้าวเที่ยง', 'ทำไมตัวเลขบนแป้นโทรศัพท์กับเครื่องคิดเลขสลับกัน'],
-      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ครู, สวนกระแส',
-      rules: 'ตอบคำถามเดียวให้จบ เปิดด้วยคำถามที่คนพิมพ์ค้นจริง ให้คำตอบสั้นภายใน 10 วินาทีแรกแล้วค่อยขยายเหตุผล ใช้การเปรียบเทียบกับของใกล้ตัว ข้อเท็จจริงต้องตรวจสอบได้ CTA "เซฟไว้"' },
-    { id: 'whatif', cat: 'learn', why: 'สถานการณ์ "ถ้า..." ทำให้คนอยากรู้คำตอบและถกเถียงในคอมเมนต์', label: 'ถ้าเกิด...จะเป็นยังไง', desc: 'วิทยาศาสตร์สนุก สมมติสถานการณ์แปลกๆ', look: 'chalk', scene: 'night', cast: ['teacher', 'doctor', 'boy'], length: 45, tone: 'ตื่นเต้น อยากรู้ อิงวิทยาศาสตร์',
-      examples: ['ถ้าโลกหยุดหมุน 1 วินาทีจะเกิดอะไรขึ้น', 'ถ้ามนุษย์ไม่ต้องนอนเลย', 'ถ้าดวงจันทร์หายไปคืนนี้'],
-      archetypes: 'คำถามที่ทุกคนเคยสงสัย, หมอดู, ตัวเลขแปลก',
-      rules: 'เล่าผลที่ตามมาเป็นลำดับเวลา (1 วินาที 1 วัน 1 ปี) ทุกขั้นอิงหลักวิทยาศาสตร์ที่ยอมรับ บอกชัดเมื่อเป็นการคาดการณ์ เก็บผลที่ช็อกที่สุดไว้ท้าย' },
-    { id: 'history', cat: 'learn', why: 'ประวัติศาสตร์เล่าแบบเรื่องสั้นเป็นแนวช่องไม่เปิดหน้าที่ดูได้ตลอด ไม่ตกยุค', label: 'ประวัติศาสตร์', desc: 'เหตุการณ์สำคัญของไทยและโลก เล่าเหมือนหนัง', look: 'paper', scene: 'sunset', cast: ['narrator', 'detective', 'grandma'], length: 60, tone: 'ยิ่งใหญ่ น่าติดตาม น่าเชื่อถือ',
-      examples: ['คืนเดียวที่เปลี่ยนชะตากรุงศรีอยุธยา', 'จดหมายที่มาถึงช้าไป 1 วันจนแพ้สงคราม', 'ทำไมสยามไม่เคยเป็นอาณานิคม'],
-      archetypes: 'ปลายเรื่องก่อน, ข้อเท็จจริงช็อก, สวนกระแส',
-      rules: 'เปิดด้วยช่วงพีคของเหตุการณ์ก่อน แล้วย้อนเล่า ใส่ปี ชื่อ สถานที่ที่ตรวจสอบได้ แยกหลักฐานกับการตีความ ไม่วาดหน้าบุคคลจริงให้ชัด เลี่ยงประเด็นที่อาจละเมิดกฎหมายหรือความอ่อนไหวทางการเมือง' },
-    { id: 'psych', cat: 'learn', why: 'จิตวิทยาและการพัฒนาตัวเองแบบแอนิเมชันคนแชร์ต่อและเซฟไว้ดูซ้ำ', label: 'จิตวิทยาน่ารู้', desc: 'พฤติกรรมคน เทคนิคใจ ทำไมเราถึงทำแบบนั้น', look: 'watercolor', scene: 'sunset', cast: ['narrator', 'girl', 'dad'], length: 45, tone: 'นุ่มนวล เข้าใจ ไม่ตัดสิน',
-      examples: ['ทำไมเราจำคำติได้นานกว่าคำชม', 'กฎ 2 นาทีที่ทำให้เลิกผัดวันประกันพรุ่ง', 'ทำไมยิ่งมีตัวเลือกเยอะยิ่งเลือกไม่ได้'],
-      archetypes: 'ครู, สวนกระแส, คำถามที่ทุกคนเคยสงสัย',
-      rules: 'อธิบายแนวคิดเดียวพร้อมตัวอย่างในชีวิตจริง อ้างงานวิจัยเฉพาะที่มีจริง (ถ้าไม่แน่ใจให้พูดกว้างๆ) ให้วิธีใช้ได้ทันทีหนึ่งข้อ ไม่วินิจฉัยโรคทางใจ' },
-    { id: 'health', cat: 'learn', why: 'ความรู้สุขภาพใกล้ตัวมีคนค้นหาตลอด แต่ต้องระวังข้อมูลผิด', label: 'สุขภาพใกล้ตัว', desc: 'ร่างกายเราทำงานยังไง ความเชื่อผิดๆ ที่ควรรู้', look: 'minimal', scene: 'city', cast: ['doctor', 'dad', 'grandma'], length: 45, tone: 'เป็นมิตร ชัดเจน น่าเชื่อถือ',
-      examples: ['ดื่มน้ำวันละ 8 แก้วจริงหรือ', 'ทำไมเวลาหิวถึงอารมณ์เสียง่าย', 'นั่งนานๆ ส่งผลต่อร่างกายยังไง'],
-      archetypes: 'สวนกระแส, คำถามที่ทุกคนเคยสงสัย, ครู',
-      rules: 'ใช้ข้อมูลจากหน่วยงานสาธารณสุขหรืองานวิจัยที่ยอมรับเท่านั้น ห้ามรับประกันการรักษา ห้ามแนะนำยาหรืออาหารเสริม จบด้วยคำแนะนำให้ปรึกษาแพทย์เมื่อมีอาการ' },
-    { id: 'money', cat: 'life', why: 'การเงินส่วนตัวเป็นหมวดที่โตเร็วในเทรนด์ TikTok กลางปี 2026 และรายได้ต่อวิวสูง', label: 'การเงินใกล้ตัว', desc: 'ออมเงิน ใช้เงิน กับดักหนี้ เล่าเป็นเรื่อง', look: 'minimal', scene: 'city', cast: ['dad', 'mom', 'vendor'], length: 45, tone: 'จริงใจ เข้าใจง่าย ไม่ขายฝัน',
-      examples: ['ทำไมเงินเดือนขึ้นแต่เงินเก็บไม่เพิ่ม', 'กาแฟวันละแก้ว 10 ปีเท่ากับเท่าไหร่', 'ผ่อน 0% ฟรีจริงหรือ'],
-      archetypes: 'ตัวเลขแปลก, สวนกระแส, ครู, นักทดลอง',
-      rules: 'คำนวณตัวเลขให้ถูกและแสดงวิธีคิด ห้ามแนะนำให้ซื้อหุ้นหรือสินทรัพย์ตัวใดตัวหนึ่ง ห้ามรับประกันผลตอบแทน บอกว่าเป็นความรู้ทั่วไปไม่ใช่คำแนะนำการลงทุน' },
-    { id: 'founder', cat: 'life', why: 'เรื่องเส้นทางผู้ก่อตั้งเติบโต 210% ใน 30 วันตามข้อมูลกลางปี 2026 (ตัวเลขจากผู้ให้บริการเครื่องมือ)', label: 'เส้นทางธุรกิจ', desc: 'จากศูนย์สู่ร้านดัง ล้มแล้วลุก เล่าแบบเรื่องจริง', look: 'pixel', scene: 'city', cast: ['vendor', 'narrator', 'dad'], length: 60, tone: 'สู้ชีวิต สร้างแรงบันดาลใจ จริงใจ',
-      examples: ['แม่ค้าข้าวมันไก่ที่ขายวันแรกได้ 3 จาน', 'ร้านที่เกือบเจ๊งแต่รอดเพราะลูกค้าคนเดียว', 'จากแผงลอยสู่แฟรนไชส์ 200 สาขา'],
-      archetypes: 'ปลายเรื่องก่อน, ตัวเลขแปลก, นักทดลอง',
-      rules: 'โครง: จุดเริ่มต้นที่ยาก → ความล้มเหลวที่เจ็บที่สุด → การตัดสินใจที่เปลี่ยนเกม → ผลลัพธ์ที่วัดได้ → บทเรียนหนึ่งข้อ ถ้าเป็นธุรกิจจริงต้องใช้ข้อมูลที่ตรวจสอบได้ ถ้าแต่งให้บอกว่าเป็นเรื่องสมมติ' },
-    { id: 'book', cat: 'life', why: 'สรุปหนังสือแบบแอนิเมชันมีคนค้นชื่อหนังสือตลอด เป็นคอนเทนต์ที่ไม่ตกยุค', label: 'สรุปหนังสือ', desc: 'แก่นหนังสือดังใน 1 นาที พร้อมไอเดียที่ใช้ได้จริง', look: 'paper', scene: 'meadow', cast: ['narrator', 'teacher', 'boy'], length: 60, tone: 'ฉลาด กระชับ เป็นกันเอง',
-      examples: ['สรุป Atomic Habits ใน 60 วินาที', 'ไอเดียเดียวจาก Rich Dad Poor Dad ที่ควรรู้', 'สรุป The Psychology of Money 3 ข้อ'],
-      archetypes: 'ครู, ตัวเลขแปลก, กั๊กคำตอบ',
-      rules: 'บอกชื่อหนังสือและผู้เขียนให้ถูก สรุปด้วยคำของตัวเอง ห้ามคัดลอกข้อความยาว เลือก 1-3 ไอเดียหลักพร้อมตัวอย่างใช้จริง ปิดด้วยไอเดียที่ทำได้ทันที' },
-    { id: 'lifelesson', cat: 'life', why: 'เรื่องจุดเริ่มต้นถึงความสำเร็จสร้างความรู้สึกร่วมและคนจดจำได้', label: 'ข้อคิดชีวิต', desc: 'เรื่องสั้นแรงบันดาลใจ สู้ชีวิต ครอบครัว', look: 'watercolor', scene: 'sunset', cast: ['dad', 'boy', 'grandma'], length: 45, tone: 'ซึ้ง อบอุ่น ให้กำลังใจ',
-      examples: ['พ่อที่ขี่มอเตอร์ไซค์ส่งลูกเรียนทุกวัน 12 ปี', 'คำพูดประโยคเดียวของยายที่เปลี่ยนชีวิตหลาน', 'วันที่สอบตกคือวันที่ดีที่สุด'],
-      archetypes: 'ปลายเรื่องก่อน, click-to-unpause, กั๊กคำตอบ',
-      rules: 'มีช่วงเวลาที่จับใจหนึ่งจุด แสดงด้วยการกระทำมากกว่าคำสอน ข้อคิดสุดท้ายสั้นและไม่เทศนา หลีกเลี่ยงการเร้าอารมณ์เกินจริง' },
-    { id: 'food', cat: 'life', why: 'เรื่องอาหารและร้านดังเป็นสิ่งที่คนไทยหยุดดูและแชร์บ่อย', label: 'อาหาร & สตรีทฟู้ด', desc: 'ที่มาของเมนูดัง เคล็ดลับร้านเก่าแก่', look: 'pastel', scene: 'city', cast: ['vendor', 'mom', 'boy'], length: 30, tone: 'หิว อบอุ่น ชวนลอง',
-      examples: ['ทำไมผัดไทยถึงชื่อผัดไทย', 'ร้านก๋วยเตี๋ยวที่ขายมา 60 ปีโดยไม่ขึ้นราคา', 'ทำไมข้าวมันไก่ต้องกินกับซุป'],
-      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ปลายเรื่องก่อน, กั๊กคำตอบ',
-      rules: 'ประวัติเมนูต้องตรวจสอบได้ ถ้าเป็นตำนานให้บอกว่าเป็นตำนาน ใส่รายละเอียดที่ทำให้หิว (เสียง สี กลิ่น) ปิดด้วยคำถามชวนคุยว่าร้านไหนอร่อยสุด' }
-  ];
-  const CATS = [{ id: 'all', label: 'ทั้งหมด' }, { id: 'story', label: 'เล่าเรื่อง & บันเทิง' }, { id: 'mystery', label: 'ลึกลับ & หลอน' }, { id: 'learn', label: 'ความรู้' }, { id: 'life', label: 'ชีวิต เงิน & ธุรกิจ' }];
-  const themeOf = () => THEMES.find((t) => t.id === state.theme);
-  const LENGTHS = [15, 30, 45, 60].map((n) => ({ id: n, label: n + ' วิ' }));
-  function serialize(m) {
-    const out = [`ชื่อเรื่อง: ${m.title || 'คลิปของฉัน'}`];
-    m.shots.forEach((sh, i) => {
-      out.push('---', `[${i + 1}] ${sh.role || 'ช็อต'} · ${(+sh.dur || 4).toFixed(1).replace(/\.0$/, '')} วิ`);
-      out.push('ตัวละคร: ' + (sh.actors || []).map((a) => `${CH[a.id] ? nameOf(a.id) : a.id}=${POSE_TH[a.pose] || a.pose || 'ยืน'}`).join(', '));
-      out.push('บรรยาย: ' + (sh.text || ''));
-      if (sh.onscreen) out.push('บนจอ: ' + sh.onscreen);
-    });
-    return out.join('\n');
-  }
-  function parseScript(text) {
-    const warns = [], m = { title: 'คลิปของฉัน', shots: [] }; let cur = null;
-    for (const raw of text.split('\n')) {
-      const line = raw.trim(); if (!line || line === '---') continue;
-      let mm;
-      if ((mm = /^ชื่อเรื่อง\s*[:：]\s*(.+)$/.exec(line))) { m.title = mm[1].trim(); continue; }
-      if ((mm = /^\[\s*\d+\s*\]\s*(.*)$/.exec(line))) {
-        const head = mm[1], d = /(\d+(?:\.\d+)?)\s*วิ/.exec(head);
-        cur = { role: head.split(/[·|]/)[0].trim() || 'ช็อต', dur: d ? +d[1] : 4, actors: [], text: '', onscreen: '' }; m.shots.push(cur); continue;
-      }
-      if (!cur) continue;
-      if ((mm = /^ตัวละคร\s*[:：]\s*(.*)$/.exec(line))) {
-        for (const part of mm[1].split(/[,，、]/)) {
-          const [nm, ps] = part.split('=').map((x) => (x || '').trim()); if (!nm) continue;
-          const id = CH[nm] ? nm : CHAR_ID[nm], pose = POSES.includes(ps) ? ps : POSE_ID[ps] || (ps ? null : 'idle');
-          if (!id) { warns.push(`ช็อต ${m.shots.length}: ไม่รู้จักตัวละคร "${nm}"`); continue; }
-          if (!pose) warns.push(`ช็อต ${m.shots.length}: ไม่รู้จักท่า "${ps}" ใช้ "ยืน" แทน`);
-          if (cur.actors.length >= MAX_CAST) { warns.push(`ช็อต ${m.shots.length}: ใส่ได้ไม่เกิน ${MAX_CAST} ตัวต่อช็อต`); continue; }
-          cur.actors.push({ id, pose: pose || 'idle' });
-        }
-        continue;
-      }
-      if ((mm = /^บรรยาย\s*[:：]\s*(.*)$/.exec(line))) { cur.text = mm[1]; continue; }
-      if ((mm = /^บนจอ\s*[:：]\s*(.*)$/.exec(line))) { cur.onscreen = mm[1]; continue; }
-      cur.text = (cur.text ? cur.text + ' ' : '') + line; // free text continues the narration
-    }
-    let total = 0;
-    m.shots.forEach((sh, i) => {
-      total += sh.dur;
-      if (!sh.actors.length) { sh.actors = [{ id: state.cast[0] || 'narrator', pose: 'talk' }]; warns.push(`ช็อต ${i + 1}: ไม่มีตัวละคร ใส่ ${nameOf(sh.actors[0].id)} ให้ก่อน`); }
-      const rate = [...sh.text].length / sh.dur;
-      if (rate > 13) warns.push(`ช็อต ${i + 1}: บรรยายยาวเกินเวลา (${rate.toFixed(0)} ตัวอักษร/วินาที ควรไม่เกิน 12) ตัดคำหรือเพิ่มวินาที`);
-      if ([...sh.onscreen].length > 28) warns.push(`ช็อต ${i + 1}: ตัวหนังสือบนจอยาวไป ควรเป็น 3-7 คำ`);
-    });
-    if (!m.shots.length) warns.push('ยังไม่มีช็อต เริ่มด้วยบรรทัด [1] ฮุก · 3 วิ');
-    else if (!state.scriptAuto && Math.abs(total - state.length) > state.length * 0.35) warns.push(`ยาวรวม ${total.toFixed(1)} วิ แต่ตั้งไว้ ${state.length} วิ`);
-    return { model: m, warns };
-  }
-  function scriptStory() {
-    const { model, warns } = parseScript($('script').value); showWarns(warns);
-    const shots = model.shots.length ? model.shots : [{ dur: 3, text: 'เขียนบทในขั้นที่ 1', actors: [{ id: 'narrator', pose: 'talk' }] }];
-    return buildStory(model.title, shots.map((s) => ({ ...s, title: s.onscreen })));
-  }
-  function showWarns(list) { const ul = $('warns'); ul.innerHTML = ''; for (const w of list) { const li = document.createElement('li'); li.textContent = w; ul.appendChild(li); } ul.hidden = !list.length; }
-  function starterScript() { // the theme's hand-written example, shown before any AI call
-    const th = themeOf(); if (th.starter) return serialize(th.starter);
-    const [a, b, c] = [th.cast[0], th.cast[1] || th.cast[0], th.cast[2] || th.cast[0]], ex = th.examples[0];
-    return serialize({ title: ex.slice(0, 40), shots: [
-      { role: 'ฮุก', dur: 3, onscreen: ex.slice(0, 18), text: ex + '…', actors: [{ id: a, pose: 'shock' }] },
-      { role: 'ตั้งปม', dur: 4, onscreen: 'แต่ไม่มีใครรู้…', text: 'แต่เรื่องนี้… มีอะไรมากกว่าที่คิด', actors: [{ id: b, pose: 'talk' }, { id: a, pose: 'idle' }] },
-      { role: 'เฉลย', dur: 4, onscreen: 'คำตอบคือ…', text: 'กด AI เขียนบท เพื่อเล่าเรื่องนี้ให้จบ', actors: [{ id: c, pose: 'happy' }] },
-      { role: 'CTA', dur: 3, onscreen: 'คิดว่ายังไง?', text: 'คุณคิดว่ายังไง… บอกไว้ในคอมเมนต์', actors: [{ id: a, pose: 'talk' }] }] });
-  }
-
-  /* ---------- stage ---------- */
-  const canvas = $('c');
-  async function sampleStory(id) {
-    if (!state.stories[id]) { const s = SAMPLES.find((x) => x.id === id); state.stories[id] = await (await fetch(s.file)).json(); }
-    return state.stories[id];
-  }
-  async function refresh() {
-    let story;
-    if (state.storyId === 'mine') story = scriptStory();
-    else story = await sampleStory(state.storyId);
-    const [W, H] = ASPECTS[state.aspect].size, dpr = Math.min(2, window.devicePixelRatio || 1);
-    state.total = window.init({ W: Math.round(W * dpr), H: Math.round(H * dpr), story, style: state.look, scene: state.scene });
-    canvas.style.width = W + 'px'; canvas.style.aspectRatio = W + ' / ' + H; canvas.style.height = 'auto';
-    if (state.t > state.total) state.t = 0;
-    $('meta').textContent = `${story.title} · ${LOOKS[state.look].label} · ${SCENE_TH[state.scene]} · ${state.aspect}`;
-    castPalette(); buildBoard(story, W, H);
-  }
-
-  /* ---------- storyboard: one still per shot, drawn by the same stage ---------- */
-  let boardShots = [];
-  function buildBoard(story, W, H) {
-    const box = $('board'); box.innerHTML = ''; boardShots = [];
-    let start = 0; const tw = 300, th = Math.round(tw * H / W);
-    story.shots.forEach((sh, i) => {
-      const dur = sh.dur, t = start + Math.min(dur * 0.6, dur - 0.3);
-      window.draw(t);
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'shot';
-      const cv = document.createElement('canvas'); cv.width = tw; cv.height = th; cv.getContext('2d').drawImage(canvas, 0, 0, tw, th);
-      const cap = document.createElement('div'); cap.className = 'cap';
-      const who = Object.entries(sh.actors).map(([id, a]) => nameOf(a.character || id)).join(', ');
-      cap.innerHTML = `<span>ช็อต ${i + 1}</span><span>${start.toFixed(1)}-${(start + dur).toFixed(1)} วิ</span>`;
-      const p = document.createElement('p'); p.textContent = sh.text || sh.title || '(ไม่มีบรรยาย)';
-      const w = document.createElement('div'); w.className = 'cap'; w.textContent = who;
-      const s0 = start; b.addEventListener('click', () => { state.t = s0 + 0.01; state.playing = true; $('play').textContent = '❚❚'; $('c').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
-      b.append(cv, cap, p, w); box.appendChild(b); boardShots.push({ b, start, end: start + dur });
-      start += dur;
-    });
-    $('board-sum').textContent = `${story.shots.length} ช็อต · ${start.toFixed(1)} วินาที`;
-    window.draw(state.t);
-  }
-  function markBoard(t) { for (const s of boardShots) s.b.setAttribute('aria-current', String(t >= s.start && t < s.end)); }
-  let last = performance.now(), tick = 0;
-  function frame(now) {
-    const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    if (state.playing) { state.t += dt; if (state.t >= state.total) state.t = 0; }
-    try { window.draw(state.t); } catch (e) { /* stage not ready */ }
-    $('seek').value = String(Math.round(state.t / state.total * 1000));
-    $('time').textContent = `${state.t.toFixed(1)} / ${state.total.toFixed(1)} วิ`;
-    if ((tick = (tick + 1) % 3) === 0) { castTick(state.t); markBoard(state.t); }
-    requestAnimationFrame(frame);
-  }
-
-  /* ---------- 1. cast ---------- */
-  const tiles = [];
-  function buildCast() {
-    const box = $('cast');
-    for (const id of Object.keys(CH)) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.id = 'cast-' + id;
-      const cv = document.createElement('canvas'); cv.width = 200; cv.height = 200;
-      const badge = document.createElement('span'); badge.className = 'badge';
-      const label = document.createElement('b'); label.textContent = nameOf(id);
-      b.append(badge, cv, label); box.appendChild(b);
-      b.addEventListener('click', () => toggleCast(id));
-      tiles.push({ id, b, badge, ctx: cv.getContext('2d') });
-    }
-    syncCast();
-  }
-  function toggleCast(id) {
-    const i = state.cast.indexOf(id);
-    if (i >= 0) state.cast.splice(i, 1); else { if (state.cast.length >= MAX_CAST) state.cast.shift(); state.cast.push(id); }
-    syncCast();
-    note('story', 'ตัวละครที่เลือกจะใช้ตอนกด AI เขียนบทครั้งถัดไป หรือพิมพ์ชื่อลงในบทได้เลย');
-    showStory('mine');
-  }
-  function syncCast() {
-    for (const t of tiles) { const k = state.cast.indexOf(t.id); t.b.setAttribute('aria-pressed', String(k >= 0)); t.badge.textContent = k >= 0 ? k + 1 : ''; }
-    $('cast-count').textContent = `เลือกแล้ว ${state.cast.length}/${MAX_CAST}`;
-  }
-  let castP;
-  function castPalette() { const look = LOOKS[state.look], base = SCENES[state.scene]; castP = look.palette ? look.palette(base) : base; }
-  function castTick(t) {
-    const look = LOOKS[state.look], tq = look.stepFps ? Math.floor(t * look.stepFps) / look.stepFps : t;
-    for (const tile of tiles) {
-      const c = tile.ctx, sel = state.cast.includes(tile.id);
-      c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
-      const g = c.createLinearGradient(0, 0, 0, 200); g.addColorStop(0, castP.skyTop); g.addColorStop(1, castP.skyBot); c.fillStyle = g; c.fillRect(0, 0, 200, 200);
-      c.fillStyle = castP.grass; c.fillRect(0, 168, 200, 32);
-      c.translate(92, 172); c.scale(0.62, 0.62);
-      Rig.draw(c, tile.id, sel ? 'walk' : 'idle', tq, castP, { look, fx: false });
-      c.restore(); LookLib.post(c, look, 200, 200, tq);
-    }
-  }
-
-  /* ---------- 2-4. chips ---------- */
-  function chips(boxId, items, key) {
-    const box = $(boxId); box.innerHTML = '';
-    for (const it of items) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = it.id;
-      b.innerHTML = it.label + (it.note ? '<small>' + it.note + '</small>' : '');
-      b.addEventListener('click', () => { state[key] = it.id; syncChips(); refresh(); });
-      box.appendChild(b);
-    }
-  }
-  function syncChips() {
-    for (const [box, key] of [['scenes', 'scene'], ['looks', 'look']]) for (const b of $(box).children) b.setAttribute('aria-pressed', String(b.dataset.id === state[key]));
-    for (const b of $('aspects').children) b.setAttribute('aria-pressed', String(b.dataset.id === state.aspect));
-    for (const b of $('stories').children) b.setAttribute('aria-pressed', String(b.dataset.id === state.storyId));
-  }
-  function buildAspects() {
-    const box = $('aspects');
-    for (const [id, a] of Object.entries(ASPECTS)) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'aspect'; b.dataset.id = id;
-      const [w, h] = a.size, k = 34 / Math.max(w, h); const i = document.createElement('i'); i.style.width = w * k + 'px'; i.style.height = h * k + 'px';
-      b.append(i, document.createTextNode(`${id} ${a.th}`)); const s = document.createElement('small'); s.textContent = a.use; b.append(s);
-      b.addEventListener('click', () => { state.aspect = id; syncChips(); refresh(); });
-      box.appendChild(b);
-    }
-  }
-  function buildStories() {
-    const box = $('stories'); box.innerHTML = '';
-    const items = [{ id: 'mine', label: 'บทของฉัน' }, ...SAMPLES.map((s) => ({ ...s, note: 'ตัวอย่าง' }))];
-    for (const it of items) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = it.id;
-      b.innerHTML = it.label + (it.note ? '<small>' + it.note + '</small>' : '');
-      b.addEventListener('click', () => showStory(it.id)); box.appendChild(b);
-    }
-    syncChips();
-  }
-  function showStory(id) { state.storyId = id; state.t = 0; syncChips(); refresh(); }
-
-  /* ---------- images ---------- */
-  for (const sec of ['cast', 'scene', 'look', 'aspect', 'story']) {
-    $('img-' + sec).addEventListener('change', (e) => {
-      const f = e.target.files && e.target.files[0]; if (!f) return;
-      state.images[sec] = f; showThumb(sec); e.target.value = '';
-      if (sec === 'aspect') aspectFromImage(f);
-      else note(sec, 'ใส่ภาพแล้ว กด AI ช่วยคิด เพื่อให้ AI ดูภาพนี้' + (sec === 'story' ? ' แล้วกด AI เขียนบท' : ''));
-    });
-  }
-  function showThumb(sec) {
-    const box = $('thumb-' + sec), f = state.images[sec]; box.innerHTML = '';
-    if (!f) { box.hidden = true; return; }
-    const img = document.createElement('img'); img.alt = 'ภาพอ้างอิง'; img.src = URL.createObjectURL(f);
-    const name = document.createElement('span'); name.textContent = f.name;
-    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'เอาออก'; rm.addEventListener('click', () => { delete state.images[sec]; showThumb(sec); });
-    box.append(img, name, rm); box.hidden = false;
-  }
-  function aspectFromImage(f) {
-    const img = new Image(); img.onload = () => {
-      const r = img.naturalWidth / img.naturalHeight, id = r < 0.8 ? '9:16' : r > 1.25 ? '16:9' : '1:1';
-      state.aspect = id; syncChips(); refresh(); note('aspect', `ภาพนี้กว้าง ${img.naturalWidth} × สูง ${img.naturalHeight} จึงเลือก ${id} ${ASPECTS[id].th}`);
-    }; img.src = URL.createObjectURL(f);
-  }
-  function note(sec, text, err) { const n = $('note-' + sec); n.textContent = text; n.hidden = !text; n.classList.toggle('err', !!err); }
-
-  /* ---------- AI (sample capability) ---------- */
-  let sample = null, imagesOk = false;
-  const ERR = { not_granted: 'ยังไม่ได้อนุญาตให้หน้านี้ใช้ Claude', sampling_disabled: 'บัญชีนี้ใช้ Claude จากหน้านี้ไม่ได้', rate_limited: 'เรียกใช้บ่อยเกินไป รอสักครู่แล้วลองใหม่', image_rejected: 'ใช้ภาพนี้ไม่ได้ ลองภาพ JPG หรือ PNG อื่น', invalid_json: 'AI ตอบกลับไม่ครบ ลองกดอีกครั้ง', refused: 'AI ไม่ตอบโจทย์นี้ ลองเปลี่ยนไอเดีย', session_expired: 'ต้องเข้าสู่ระบบใหม่' };
-  const errText = (e) => ERR[e && e.code] || 'ติดต่อ AI ไม่สำเร็จ ลองใหม่อีกครั้ง';
-  const castList = () => Object.keys(CH).map((id) => `${id} (${nameOf(id)}${CH[id].template === 'human' ? ', คน' : ', สัตว์'})`).join(', ');
-  const idea = () => $('idea').value.trim() || '(ไม่ได้ระบุ)';
-  function withImage(sec, prompt) {
-    const f = state.images[sec];
-    if (f && imagesOk) return [prompt + '\nมีภาพอ้างอิงแนบมาด้วย ให้ใช้ภาพนี้ประกอบการตัดสินใจ', { images: [f] }];
-    return [prompt, {}];
-  }
-  const PROMPTS = {
-    cast: () => withImage('cast', `คุณช่วยเลือกตัวละครสำหรับคลิปสั้นแอนิเมชันภาษาไทย ไอเดียคลิป: "${idea()}"\nตัวละครที่มี: ${castList()}\nเลือก 2-4 ตัวที่เหมาะที่สุด ถ้ามีภาพแนบ ให้เลือกตัวที่ใกล้เคียงคน/สัตว์ในภาพ\nตอบเป็น JSON เท่านั้น: {"ids":["id",...],"reason":"เหตุผลสั้นๆ ภาษาไทย 1 ประโยค"}`),
-    scene: () => withImage('scene', `เลือกฉากให้คลิปสั้น ไอเดีย: "${idea()}"\nฉากที่มี: ${Object.entries(SCENE_TH).map(([k, v]) => k + ' (' + v + ')').join(', ')}\nถ้ามีภาพแนบ ให้เลือกฉากที่ใกล้เคียงภาพ\nตอบเป็น JSON เท่านั้น: {"scene":"id","reason":"เหตุผลสั้นๆ ภาษาไทย"}`),
-    look: () => withImage('look', `เลือกสไตล์ภาพให้คลิปสั้น ไอเดีย: "${idea()}"\nสไตล์ที่มี: ${Object.entries(LOOKS).map(([k, v]) => k + ' (' + v.label + ')').join(', ')}\nถ้ามีภาพแนบ ให้เลือกสไตล์ที่ใกล้เคียงลายเส้นและสีของภาพ\nตอบเป็น JSON เท่านั้น: {"style":"id","reason":"เหตุผลสั้นๆ ภาษาไทย"}`),
-    aspect: () => [`คลิปสั้นไอเดีย "${idea()}" ควรใช้สัดส่วนจอไหน ตัวเลือก: 9:16 (TikTok/Reels/Shorts), 16:9 (YouTube/Facebook), 1:1 (โพสต์ฟีด)\nตอบเป็น JSON เท่านั้น: {"aspect":"9:16|16:9|1:1","reason":"เหตุผลสั้นๆ ภาษาไทย"}`, { modelTier: 'quick' }]
-  };
-  const APPLY = {
-    cast(r) { const ids = (r.ids || []).filter((id) => CH[id]).slice(0, MAX_CAST); if (!ids.length) throw { code: 'invalid_json' }; state.cast = ids; syncCast(); showStory('mine'); return `${ids.map(nameOf).join(', ')}: ${r.reason || ''}`; },
-    scene(r) { if (!SCENES[r.scene]) throw { code: 'invalid_json' }; state.scene = r.scene; syncChips(); refresh(); return `${SCENE_TH[r.scene]}: ${r.reason || ''}`; },
-    look(r) { if (!LOOKS[r.style]) throw { code: 'invalid_json' }; state.look = r.style; syncChips(); refresh(); return `${LOOKS[r.style].label}: ${r.reason || ''}`; },
-    aspect(r) { if (!ASPECTS[r.aspect]) throw { code: 'invalid_json' }; state.aspect = r.aspect; syncChips(); refresh(); return `${r.aspect}: ${r.reason || ''}`; }
-  };
-  async function askSection(sec, btn) {
-    if (!sample) { note(sec, 'AI ใช้ได้เมื่อเปิดหน้านี้ใน claude.ai เท่านั้น', true); return; }
-    btn.disabled = true; note(sec, 'AI กำลังคิด...');
-    try { const [p, o] = PROMPTS[sec](); const r = await sample.json(p, { modelTier: 'quick', ...o }); note(sec, 'AI เลือกให้: ' + APPLY[sec](r)); }
-    catch (e) { note(sec, errText(e), true); }
-    finally { btn.disabled = false; }
-  }
-  /* ---------- viral writing pipeline (skills: thai-doc-shorts, content-scriptwriter, content-qa-reviewer) ---------- */
-  const VIRAL_RULES = `หลักคอนเทนต์ไวรัลที่ต้องใช้:
-- ฮุก 0-3 วินาที: เปิดด้วย payoff เดิมพัน หรือภาพแปลก ห้ามทักทาย ห้าม "วันนี้เราจะมาพูดถึง" ห้ามเกริ่นตามลำดับเวลา พูดจบใน 2 วินาที (ไม่เกิน 9 คำ) มีคำนาม ตัวเลข หรือเดิมพันที่จับต้องได้ และเปิดคำถามค้างในหัวคนดู (open loop)
-- ฮุก 3 ชั้นชี้ไอเดียเดียว: ภาพเฟรมแรก + คำพูด + ตัวหนังสือบนจอ 3-7 คำ (ตัวหนังสือทำให้คำพูดคมขึ้น ไม่พิมพ์ซ้ำ)
-- โครง: ฮุก → ตั้งปม → เร่งเดิมพัน (เชื่อมด้วย "แต่" หรือ "ดังนั้น" ไม่ใช่ "แล้วก็") → re-hook กลางคลิป ("แต่จุดที่ไม่มีใครคาดคือ…") → หักมุมราว 70% ของคลิป → เฉลยที่ปิดทุก open loop → CTA เดียวต้นทุนต่ำ (เซฟไว้ / คอมเมนต์คำตอบ) ห้าม engagement bait
-- ประโยคสั้นไม่เกิน 12 คำ ใส่ "…" ตรงจุดหยุดหายใจ (หลังฮุก ก่อนหักมุม ก่อนเฉลย) ความเร็วพากย์ราว 2.2-3 คำต่อวินาที
-- เปลี่ยนช็อตทุก 2-4 วินาที ไม่มีช่วงยืด ตอนจบวนกลับประโยคแรกได้ถ้าเป็นธรรมชาติ
-- คนดูเบื่อการเล่าเรียง 1-2-3: เปิดด้วยช่วงไฮไลต์ก่อน แล้วค่อยย้อนเล่า เล่าแบบจริงใจไม่ปรุงแต่ง
-- สัญญาในฮุกต้องตรงกับสิ่งที่ส่งมอบ ห้ามคลิกเบต ห้ามแต่งตัวเลข สถิติ หรือคำพูดของคนจริง เรื่องจริงต้องแยกข้อเท็จจริงกับทฤษฎี`;
-  const ARCHETYPES = 'ข้อเท็จจริงช็อก, ปลายเรื่องก่อน, นักสืบ, ครู, นักมายากล, สวนกระแส, หมอดู, นักทดลอง, กั๊กคำตอบ, ตัวเลขแปลก, click-to-unpause (เฟรมแรกกลางเหตุการณ์), คำถามที่ทุกคนเคยสงสัย';
-  const fmtLabel = () => themeOf().label;
-  const brief = () => `ไอเดีย: "${idea()}"\nธีม: ${themeOf().label} (โทน: ${themeOf().tone})\nกติกาของธีมนี้: ${themeOf().rules}\nความยาว: ${state.length} วินาที\nแพลตฟอร์ม: ${ASPECTS[state.aspect].use} (${state.aspect})\nฉาก: ${SCENE_TH[state.scene]}\nตัวละครที่ใช้ได้ (id = ชื่อ): ${(state.cast.length ? state.cast : ['narrator']).map((id) => id + ' = ' + nameOf(id)).join(', ')}`;
-  const SCRIPT_JSON = `{"title":"ชื่อเรื่อง","shots":[{"role":"ฮุก|ตั้งปม|เร่ง|re-hook|หักมุม|เฉลย|CTA","dur":3,"text":"เสียงบรรยาย","onscreen":"ตัวหนังสือบนจอ 3-7 คำ","actors":[{"id":"...","pose":"idle|walk|run|hop|sleep|shock|happy|sad|talk"}]}],"openLoop":"คำถามที่ค้างในหัวคนดู","reHook":"ประโยค re-hook","caption":"แคปชัน 1-2 บรรทัด ต่อยอดฮุก","hashtags":["#..."],"factsToCheck":["ข้อเท็จจริงที่ต้องหาแหล่งอ้างอิง"]}`;
-  function needAI(sec) { if (sample) return true; note(sec, 'AI ใช้ได้เมื่อเปิดหน้านี้ใน claude.ai เท่านั้น', true); return false; }
-  async function run(sec, btn, fn) {
-    if (!needAI(sec)) return; btn.disabled = true;
-    try { await fn(); } catch (e) { note(sec, errText(e), true); } finally { btn.disabled = false; }
-  }
-  async function askIdeas(btn) {
-    await run('ideas', btn, async () => {
-      note('ideas', 'AI กำลังหาไอเดีย...');
-      const [p, o] = withImage('story', `เสนอไอเดียคลิปสั้นแอนิเมชันภาษาไทย 5 ไอเดีย ธีม "${fmtLabel()}" (${themeOf().rules}) ยาว ${state.length} วินาที ต่อยอดจากโจทย์นี้ (ถ้ามี): "${$('idea').value.trim()}"
-เกณฑ์: มี "ปม" ที่คนอยากรู้คำตอบ เขียนฮุกแรงได้ เล่าจบในเวลาที่กำหนด ถ้าเป็นเรื่องจริงต้องตรวจสอบได้ และยังไม่ค่อยมีคลิปไทยทำ
-ตอบเป็น JSON เท่านั้น: {"ideas":[{"idea":"ไอเดียประโยคเดียว","why":"ทำไมคนจะหยุดดู สั้นๆ"}]}`);
-      const r = await sample.json(p, { modelTier: 'default', cache: false, ...o });
-      const box = $('ideas'); box.innerHTML = '';
-      for (const it of (r.ideas || []).slice(0, 6)) {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = it.idea; b.title = it.why || '';
-        b.addEventListener('click', () => { $('idea').value = it.idea; note('ideas', 'ใช้ไอเดียนี้: ' + (it.why || '')); });
-        box.appendChild(b);
-      }
-      note('ideas', 'แตะไอเดียเพื่อใช้ แล้วไปขั้น ก.');
-    });
-  }
-  async function askHooks(btn) {
-    await run('hooks', btn, async () => {
-      note('hooks', 'AI กำลังคิดฮุก...');
-      const [p, o] = withImage('story', `คุณคือคนเขียนบทคลิปสั้นไวรัลภาษาไทย\n${brief()}\n\n${VIRAL_RULES}\n\nเขียนฮุก 6 แบบ จากอย่างน้อย 4 แนวที่ต่างกัน ให้น้ำหนักแนวที่เข้ากับธีม: ${themeOf().archetypes} และเลือกเพิ่มได้จาก: ${ARCHETYPES}
-แต่ละฮุกต้องผ่าน: พูดจบใน 2 วินาที, เปิดด้วย payoff หรือเดิมพัน, มีคำจับต้องได้ในครึ่งแรก, เปิดคำถามค้าง, เนื้อหาจ่ายคืนได้จริง
-ตอบเป็น JSON เท่านั้น: {"hooks":[{"archetype":"ชื่อแนว","line":"คำพูด","onscreen":"ตัวหนังสือบนจอ 3-7 คำ","firstFrame":"ภาพเฟรมแรก (ตัวละครอะไร ท่าไหน)","loop":"คำถามที่ค้างในหัวคนดู"}],"best":0,"why":"ทำไมตัวนี้แรงสุด 1 ประโยค"}`);
-      const r = await sample.json(p, { modelTier: 'default', cache: false, ...o });
-      state.hooks = (r.hooks || []).slice(0, 8); state.hook = Math.min(Math.max(0, +r.best || 0), state.hooks.length - 1);
-      renderHooks(); note('hooks', `AI แนะนำฮุกที่ ${state.hook + 1}: ${r.why || ''} เลือกฮุกอื่นได้ แล้วไปขั้น ข.`);
-    });
-  }
-  function renderHooks() {
-    const box = $('hooks'); box.innerHTML = '';
-    state.hooks.forEach((h, i) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'hook'; b.setAttribute('aria-pressed', String(i === state.hook));
-      const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = `ฮุก ${i + 1} · ${h.archetype || ''}`;
-      const line = document.createElement('span'); line.className = 'line'; line.textContent = `"${h.line || ''}"`;
-      const sub = document.createElement('span'); sub.className = 'sub'; sub.textContent = `บนจอ: ${h.onscreen || '-'} · เฟรมแรก: ${h.firstFrame || '-'} · คนดูจะสงสัย: ${h.loop || '-'}`;
-      b.append(tag, line, sub); b.addEventListener('click', () => { state.hook = i; renderHooks(); }); box.appendChild(b);
-    });
-  }
-  function applyScriptJSON(r, sec) {
-    if (!r || !Array.isArray(r.shots) || !r.shots.length) throw { code: 'invalid_json' };
-    const shots = r.shots.slice(0, 10).map((s) => ({ role: s.role, dur: Math.min(8, Math.max(2, +s.dur || 3)), text: String(s.text || ''), onscreen: String(s.onscreen || ''), actors: (Array.isArray(s.actors) ? s.actors : []).filter((a) => a && CH[a.id]).slice(0, MAX_CAST) }));
-    state.prevScript = $('script').value; $('undo-script').hidden = false; state.scriptAuto = false;
-    $('script').value = serialize({ title: r.title, shots });
-    renderExtras(r); showStory('mine');
-    note(sec, `ได้บท "${r.title || ''}" ${shots.length} ช็อต แก้ข้อความในกล่องด้านล่างได้เลย แล้วกด "อัปเดตพรีวิวจากบท"`);
-  }
-  async function askScript(btn) {
-    await run('story', btn, async () => {
-      note('story', 'AI กำลังเขียนบท อาจใช้เวลาครึ่งนาที...');
-      const h = state.hooks[state.hook];
-      const hookPart = h ? `ใช้ฮุกนี้เป็นช็อตแรก: คำพูด "${h.line}" ตัวหนังสือบนจอ "${h.onscreen}" เฟรมแรก "${h.firstFrame}" คำถามค้าง "${h.loop}"` : 'ยังไม่ได้เลือกฮุก ให้คิดฮุกที่แรงที่สุดเองตามหลักด้านล่าง';
-      const n = Math.max(3, Math.min(10, Math.round(state.length / 4)));
-      const [p, o] = withImage('story', `คุณคือคนเขียนบทคลิปสั้นแอนิเมชันไวรัลภาษาไทย\n${brief()}\n${hookPart}\n\n${VIRAL_RULES}\n
-ข้อกำหนดบท: ${n} ช็อต (บวกลบ 1) รวมราว ${state.length} วินาที, ช็อตละ 2-6 วินาที, บรรยายช็อตละไม่เกิน (วินาที x 11) ตัวอักษร, ช็อตแรก role "ฮุก" ช็อตสุดท้าย role "CTA", ช็อตละ 1-4 ตัวละครจากรายการด้านบนเท่านั้น (ใช้ id), เลือกท่าให้ตรงอารมณ์
-ตอบเป็น JSON เท่านั้น: ${SCRIPT_JSON}`);
-      applyScriptJSON(await sample.json(p, { modelTier: 'default', cache: false, ...o }), 'story');
-    });
-  }
-  let lastQA = null;
-  async function askQA(btn) {
-    await run('qa', btn, async () => {
-      note('qa', 'AI กำลังตรวจบท...');
-      const r = await sample.json(`คุณคือคนตรวจคลิปสั้นก่อนโพสต์ (QA) ตรวจบทนี้ตามหลักไวรัลและภาษาไทย\n${brief()}\n\n${VIRAL_RULES}\n\nบท:\n${$('script').value.slice(0, 6000)}
-ตรวจ: 1) ฮุกพูดจบใน 2 วินาที เปิดด้วย payoff/เดิมพัน ไม่ทักทาย 2) ฮุก 3 ชั้นชี้ทางเดียวกัน 3) เนื้อหาส่งมอบตามที่ฮุกสัญญา 4) ปิดทุก open loop 5) มี re-hook ไม่มีช่วงยืด 6) CTA เดียว ไม่ใช่ engagement bait 7) ความยาวบรรยายเหมาะกับเวลา 8) คำผิดภาษาไทยและตัวเลขที่ต้องหาแหล่งอ้างอิง
-ตอบเป็น JSON เท่านั้น: {"hookScore":7,"verdict":"พร้อมโพสต์|ผ่านแบบมีเงื่อนไข|ไม่ผ่าน","checks":[{"item":"หัวข้อที่ตรวจ","ok":true,"note":"สั้นๆ"}],"dropOff":{"shot":2,"why":"ทำไมคนจะเลื่อนหนีตรงนี้","fix":"วิธีแก้"},"spelling":[{"wrong":"","right":""}],"fixes":["สิ่งที่ควรแก้ เรียงจากสำคัญสุด"]}`, { modelTier: 'default', cache: false });
-      lastQA = r; renderQA(r); note('qa', 'ตรวจเสร็จ กด "ให้ AI แก้ตามรายงาน" ถ้าต้องการ (ย้อนกลับได้)');
-    });
-  }
-  function renderQA(r) {
-    const box = $('qa'); box.innerHTML = ''; box.hidden = false;
-    const sc = document.createElement('div'); sc.className = 'score';
-    sc.innerHTML = '<span>คะแนนฮุก</span>'; const st = document.createElement('strong'); st.textContent = `${+r.hookScore || 0}/10`; const vd = document.createElement('span'); vd.textContent = r.verdict || '';
-    sc.append(st, vd); box.appendChild(sc);
-    const ul = document.createElement('ul');
-    for (const c of r.checks || []) { const li = document.createElement('li'); li.className = c.ok ? 'ok' : 'bad'; const m = document.createElement('span'); m.className = 'mark'; m.textContent = c.ok ? '✓' : '!'; const t = document.createElement('span'); t.textContent = `${c.item}${c.note ? ': ' + c.note : ''}`; li.append(m, t); ul.appendChild(li); }
-    box.appendChild(ul);
-    const add = (h, txt) => { if (!txt) return; const d = document.createElement('div'); d.className = 'box'; const t = document.createElement('h3'); t.textContent = h; const p = document.createElement('div'); p.textContent = txt; d.append(t, p); box.appendChild(d); };
-    if (r.dropOff) add(`จุดที่คนน่าจะเลื่อนหนี: ช็อต ${r.dropOff.shot || '?'}`, `${r.dropOff.why || ''} → ${r.dropOff.fix || ''}`);
-    if ((r.spelling || []).length) add('คำผิด', r.spelling.map((s) => `${s.wrong} → ${s.right}`).join(' · '));
-    if ((r.fixes || []).length) add('ควรแก้', r.fixes.map((f, i) => `${i + 1}. ${f}`).join('\n'));
-    const fix = document.createElement('button'); fix.type = 'button'; fix.className = 'btn ai'; fix.textContent = 'ให้ AI แก้ตามรายงาน';
-    fix.addEventListener('click', () => askFix(fix)); box.appendChild(fix);
-  }
-  async function askFix(btn) {
-    await run('qa', btn, async () => {
-      note('qa', 'AI กำลังแก้บทตามรายงาน...');
-      const r = await sample.json(`แก้บทคลิปสั้นภาษาไทยนี้ตามรายงานตรวจ โดยคงเรื่องและตัวละครเดิม\n${brief()}\n\n${VIRAL_RULES}\n\nรายงานตรวจ:\n${JSON.stringify(lastQA).slice(0, 4000)}\n\nบทเดิม:\n${$('script').value.slice(0, 6000)}\n\nตอบเป็น JSON เท่านั้น (บทที่แก้แล้วทั้งเรื่อง): ${SCRIPT_JSON}`, { modelTier: 'default', cache: false });
-      applyScriptJSON(r, 'qa');
-    });
-  }
-  function renderExtras(r) {
-    const box = $('extras'); box.innerHTML = '';
-    const add = (h, txt) => { if (!txt) return; const d = document.createElement('div'); d.className = 'box'; const t = document.createElement('h3'); t.textContent = h; const p = document.createElement('div'); p.textContent = txt; d.append(t, p); box.appendChild(d); };
-    add('คำถามค้างในหัวคนดู (open loop)', r.openLoop); add('re-hook กลางคลิป', r.reHook);
-    add('แคปชันและแฮชแท็ก', [r.caption, (r.hashtags || []).join(' ')].filter(Boolean).join('\n'));
-    if ((r.factsToCheck || []).length) add('ข้อเท็จจริงที่ต้องหาแหล่งอ้างอิงก่อนโพสต์', r.factsToCheck.map((f) => '• ' + f).join('\n'));
-    box.hidden = !box.children.length; for (const d of box.querySelectorAll('.box div')) d.style.whiteSpace = 'pre-line';
-  }
-  const PIPE = { ideas: askIdeas, hooks: askHooks, script: askScript, qa: askQA };
-  document.querySelectorAll('[data-ai]').forEach((b) => b.addEventListener('click', () => (PIPE[b.dataset.ai] ? PIPE[b.dataset.ai](b) : askSection(b.dataset.ai, b))));
-  (async () => {
-    try { sample = window.claude ? await window.claude.use('sample') : null; } catch (e) { sample = null; }
-    if (sample) { try { imagesOk = !!(await sample.limits()).images; } catch (e) { imagesOk = false; } }
-    if (!sample) document.querySelectorAll('[data-ai]').forEach((b) => (b.title = 'ใช้ได้เมื่อเปิดใน claude.ai'));
-  })();
-
-  /* ---------- wire up ---------- */
-  chips('scenes', Object.keys(SCENES).map((id) => ({ id, label: SCENE_TH[id] })), 'scene');
-  chips('looks', Object.entries(LOOKS).map(([id, l]) => ({ id, label: l.label })), 'look');
-  buildAspects(); buildStories(); buildCast(); syncChips();
-  for (const [box, items, key] of [['lengths', LENGTHS, 'length']]) {
-    for (const it of items) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = it.label; b.setAttribute('aria-pressed', String(state[key] === it.id));
-      b.dataset.id = it.id; b.addEventListener('click', () => { state[key] = it.id; syncLengths(); });
-      $(box).appendChild(b);
-    }
-  }
-  function syncLengths() { for (const x of $('lengths').children) x.setAttribute('aria-pressed', String(+x.dataset.id === state.length)); }
-  function applyTheme(id) {
-    const th = THEMES.find((t) => t.id === id); state.theme = id;
-    Object.assign(state, { look: th.look, scene: th.scene, cast: th.cast.slice(), length: th.length, hooks: [], hook: -1, scriptAuto: true });
-    $('idea').value = th.examples[0]; $('theme-desc').textContent = `${th.label}: ${th.desc} · ทำไมน่าทำ: ${th.why} · ตั้งให้แล้ว: ${LOOKS[th.look].label}, ${SCENE_TH[th.scene]}, ${th.cast.map(nameOf).join(' ')}, ${th.length} วิ (เปลี่ยนเองได้ในขั้นถัดไป)`;
-    const ib = $('ideas'); ib.innerHTML = '';
-    for (const ex of th.examples) { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = ex; b.addEventListener('click', () => { $('idea').value = ex; }); ib.appendChild(b); }
-    $('hooks').innerHTML = ''; $('qa').hidden = true; $('extras').hidden = true; for (const n of ['hooks', 'story', 'qa', 'ideas']) note(n, '');
-    $('script').value = starterScript();
-    for (const b of $('themes').children) b.setAttribute('aria-pressed', String(b.dataset.id === id));
-    syncCast(); syncChips(); syncLengths(); showStory('mine');
-  }
-  function buildThemes() {
-    const box = $('themes');
-    for (const th of THEMES) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'theme'; b.dataset.id = th.id;
-      const cv = document.createElement('canvas'); cv.width = 300; cv.height = 190; const c = cv.getContext('2d');
-      const look = LOOKS[th.look], P = look.palette ? look.palette(SCENES[th.scene]) : SCENES[th.scene];
-      const g = c.createLinearGradient(0, 0, 0, 190); g.addColorStop(0, P.skyTop); g.addColorStop(1, P.skyBot); c.fillStyle = g; c.fillRect(0, 0, 300, 190);
-      c.fillStyle = P.hill1; c.beginPath(); c.moveTo(0, 150); for (let x = 0; x <= 300; x += 10) c.lineTo(x, 140 - Math.sin(x / 40) * 14); c.lineTo(300, 190); c.lineTo(0, 190); c.fill();
-      c.fillStyle = P.grass; c.fillRect(0, 158, 300, 32);
-      th.cast.slice(0, 3).forEach((id, k) => { c.save(); c.translate(70 + k * 85, 166); c.scale(0.42, 0.42); Rig.draw(c, id, ['talk', 'happy', 'shock'][k], 0.4, P, { look, fx: false, facing: k === 2 ? -1 : 1 }); c.restore(); });
-      LookLib.post(c, look, 300, 190, 0.4);
-      const t = document.createElement('b'); t.textContent = th.label; const d = document.createElement('span'); d.textContent = th.desc;
-      b.append(cv, t, d); b.addEventListener('click', () => applyTheme(th.id)); box.appendChild(b);
-    }
-  }
-  state.cat = 'all';
-  for (const ct of CATS) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = ct.id;
-    b.innerHTML = ct.label + `<small>${ct.id === 'all' ? THEMES.length : THEMES.filter((t) => t.cat === ct.id).length}</small>`;
-    b.addEventListener('click', () => { state.cat = ct.id; filterThemes(); }); $('cats').appendChild(b);
-  }
-  function filterThemes() {
-    for (const b of $('cats').children) b.setAttribute('aria-pressed', String(b.dataset.id === state.cat));
-    for (const b of $('themes').children) b.hidden = state.cat !== 'all' && THEMES.find((t) => t.id === b.dataset.id).cat !== state.cat;
-  }
-  buildThemes(); filterThemes(); applyTheme('tale');
-  $('script').addEventListener('input', () => { state.scriptAuto = false; });
-  $('apply-script').addEventListener('click', () => showStory('mine'));
-  $('undo-script').addEventListener('click', () => { if (state.prevScript == null) return; const cur = $('script').value; $('script').value = state.prevScript; state.prevScript = cur; showStory('mine'); });
-  $('copy-script').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('script').value); $('copy-script').textContent = 'คัดลอกแล้ว'; } catch (e) { $('script').select(); } setTimeout(() => ($('copy-script').textContent = 'คัดลอกบท'), 1500); });
-  $('play').addEventListener('click', () => { state.playing = !state.playing; $('play').textContent = state.playing ? '❚❚' : '▶'; $('play').setAttribute('aria-label', state.playing ? 'หยุด' : 'เล่น'); });
-  $('seek').addEventListener('input', (e) => { state.t = +e.target.value / 1000 * state.total; });
-  document.fonts && document.fonts.ready.then(() => refresh());
-  refresh().then(() => requestAnimationFrame(frame));
-})();
-</script>
+<script src="studio.js"></script>
