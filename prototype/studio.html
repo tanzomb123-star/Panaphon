@@ -1,0 +1,392 @@
+<title>Panaphon Studio Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap">
+<style>
+/* layout: builder steps on the left, live stage on the right (sticky on desktop); one column on phones with the stage first */
+:root {
+  --bg: #f3f1ec; --panel: #ffffff; --fg: #1f2329; --muted: #646b75; --line: #dcd8cf;
+  --accent: #e2572c; --accent-fg: #ffffff; --accent-soft: #fbe3d9; --chip: #ebe7df; --stage: #16181d; --ok: #2f8f5b;
+  --display: "Bai Jamjuree", "Noto Sans Thai", system-ui, sans-serif;
+  --body: "Noto Sans Thai", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #15171b; --panel: #1e2126; --fg: #eceae6; --muted: #9aa1ab; --line: #2f333a; --accent: #ff7a4d; --accent-fg: #1a1a1a; --accent-soft: #3a2a24; --chip: #2a2e35; --stage: #0b0c0f; --ok: #5cc48c; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #15171b; --panel: #1e2126; --fg: #eceae6; --muted: #9aa1ab; --line: #2f333a; --accent: #ff7a4d; --accent-fg: #1a1a1a; --accent-soft: #3a2a24; --chip: #2a2e35; --stage: #0b0c0f; --ok: #5cc48c; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px }
+header h1 { font: 700 clamp(26px, 4vw, 34px)/1.15 var(--display); margin: 0; text-wrap: balance }
+header p { margin: 6px 0 0; color: var(--muted); max-width: 64ch }
+.studio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 22px; align-items: start }
+.steps { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px }
+.card-head h2 { font: 700 17px/1.2 var(--display); margin: 0; flex: 1 1 160px }
+.card-head .n { color: var(--accent) }
+.tools { display: flex; gap: 6px; flex-wrap: wrap }
+.btn { font: 600 13px/1 var(--body); border: 1px solid var(--line); background: var(--panel); color: var(--fg); padding: 9px 12px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px }
+.btn:hover { border-color: var(--accent) }
+.btn.ai { background: var(--accent-soft); border-color: transparent }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; padding: 12px 16px; font-size: 15px }
+.btn[disabled] { opacity: .55; cursor: wait }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { font: 600 14px/1 var(--body); border: 1px solid transparent; background: var(--chip); color: var(--fg); padding: 9px 12px; border-radius: 999px; cursor: pointer }
+.chip:hover { border-color: var(--line) }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg) }
+.chip small { font-weight: 400; opacity: .75; margin-left: 4px }
+.chip:focus-visible, .btn:focus-visible, .tile:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+textarea { width: 100%; box-sizing: border-box; font: 15px/1.5 var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; resize: vertical; min-height: 64px }
+.hint { color: var(--muted); font-size: 13px; margin: 0 }
+.ai-note { font-size: 13px; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--accent-soft); color: var(--fg) }
+.ai-note.err { background: var(--chip) }
+.thumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted) }
+.thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line) }
+.thumb button { border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; font: inherit }
+.cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px }
+.tile { position: relative; background: var(--bg); border: 2px solid transparent; border-radius: 12px; padding: 4px 4px 6px; display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 0; font: inherit; color: var(--fg) }
+.tile canvas { width: 100%; aspect-ratio: 1; display: block }
+.tile b { font: 600 13px/1.25 var(--body) }
+.tile[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
+.tile .badge { position: absolute; top: 4px; right: 6px; background: var(--accent); color: var(--accent-fg); border-radius: 999px; font: 700 12px/20px var(--body); width: 20px; text-align: center }
+.tile[aria-pressed="false"] .badge { display: none }
+.aspects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.aspect { border: 2px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font: 600 14px/1.2 var(--body); color: var(--fg) }
+.aspect i { display: block; background: var(--muted); border-radius: 3px; opacity: .5 }
+.aspect small { font-weight: 400; color: var(--muted); font-size: 12px; text-align: center }
+.aspect[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
+.aspect[aria-pressed="true"] i { background: var(--accent); opacity: 1 }
+.stagebox { background: var(--stage); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 10px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px) }
+.screen { display: flex; justify-content: center }
+#c { display: block; max-width: 100%; max-height: 68vh; border-radius: 10px; background: #000 }
+.transport { display: flex; align-items: center; gap: 10px }
+.transport button { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-fg); font-size: 15px; cursor: pointer }
+.transport input { flex: 1; min-width: 0; accent-color: var(--accent) }
+.time { font: 600 13px/1 var(--body); font-variant-numeric: tabular-nums; min-width: 78px; text-align: right; color: #c9c6c0 }
+.meta { color: #a9a6a0; font-size: 13px; margin: 0 }
+@media (max-width: 860px) {
+  .studio { grid-template-columns: minmax(0, 1fr) }
+  .stagebox { order: -1; position: static }
+  #c { max-height: 48vh }
+}
+input[type=file] { display: none }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>สตูดิโอทำคลิป</h1>
+    <p>เลือกตัวละคร ฉาก สไตล์ภาพ และสัดส่วนจอ แล้วดูผลบนจอทันที ทุกส่วนใส่ภาพอ้างอิงหรือให้ AI ช่วยคิดได้ ภาพทั้งหมดวาดสดด้วยโค้ดชุดเดียวกับที่ใช้เรนเดอร์วิดีโอจริง</p>
+  </header>
+
+  <section class="studio">
+    <div class="steps">
+      <div class="card">
+        <div class="card-head"><h2>ไอเดียคลิป</h2></div>
+        <textarea id="idea" rows="2" placeholder="เช่น นิทานสอนใจเรื่องความซื่อสัตย์ หรือ ประวัติข้าวไทยใน 30 วินาที">เด็กชายทำกระเป๋าเงินหายในตลาด แล้วแม่ค้าใจดีช่วยตามหาเจ้าของ</textarea>
+        <p class="hint">ปุ่ม AI ช่วยคิด ทุกปุ่มด้านล่างใช้ไอเดียนี้ (และภาพที่ใส่ในส่วนนั้น) เป็นโจทย์</p>
+      </div>
+
+      <div class="card" id="sec-cast">
+        <div class="card-head"><h2><span class="n">1</span> ตัวละคร <small class="hint" id="cast-count"></small></h2>
+          <div class="tools"><label class="btn" for="img-cast">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="cast">AI ช่วยคิด</button></div></div>
+        <input type="file" id="img-cast" accept="image/*">
+        <div class="thumb" id="thumb-cast" hidden></div>
+        <p class="ai-note" id="note-cast" hidden></p>
+        <div class="cast" id="cast"></div>
+        <p class="hint">แตะเพื่อเลือก ได้สูงสุด 4 ตัว ตัวละครที่เลือกจะขึ้นจอทันที</p>
+      </div>
+
+      <div class="card" id="sec-scene">
+        <div class="card-head"><h2><span class="n">2</span> ฉาก</h2>
+          <div class="tools"><label class="btn" for="img-scene">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="scene">AI ช่วยคิด</button></div></div>
+        <input type="file" id="img-scene" accept="image/*">
+        <div class="thumb" id="thumb-scene" hidden></div>
+        <p class="ai-note" id="note-scene" hidden></p>
+        <div class="chips" id="scenes"></div>
+      </div>
+
+      <div class="card" id="sec-look">
+        <div class="card-head"><h2><span class="n">3</span> สไตล์ภาพ</h2>
+          <div class="tools"><label class="btn" for="img-look">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="look">AI ช่วยคิด</button></div></div>
+        <input type="file" id="img-look" accept="image/*">
+        <div class="thumb" id="thumb-look" hidden></div>
+        <p class="ai-note" id="note-look" hidden></p>
+        <div class="chips" id="looks"></div>
+      </div>
+
+      <div class="card" id="sec-aspect">
+        <div class="card-head"><h2><span class="n">4</span> สัดส่วนจอ</h2>
+          <div class="tools"><label class="btn" for="img-aspect">ใส่ภาพ</label><button class="btn ai" type="button" data-ai="aspect">AI ช่วยคิด</button></div></div>
+        <input type="file" id="img-aspect" accept="image/*">
+        <div class="thumb" id="thumb-aspect" hidden></div>
+        <p class="ai-note" id="note-aspect" hidden></p>
+        <div class="aspects" id="aspects"></div>
+      </div>
+
+      <div class="card" id="sec-story">
+        <div class="card-head"><h2><span class="n">5</span> บทและเรื่อง</h2>
+          <div class="tools"><label class="btn" for="img-story">ใส่ภาพ</label></div></div>
+        <input type="file" id="img-story" accept="image/*">
+        <div class="thumb" id="thumb-story" hidden></div>
+        <div class="chips" id="stories"></div>
+        <button class="btn primary" type="button" data-ai="story">AI เขียนบทจากไอเดียและตัวเลือกด้านบน</button>
+        <p class="ai-note" id="note-story" hidden></p>
+        <p class="hint">AI เขียนบทภาษาไทย 3-5 ช็อตด้วยตัวละครที่เลือก ระบบจัดตำแหน่งตัวละครและกล้องเองเพื่อไม่ให้ใครโดนตัดขอบ</p>
+      </div>
+    </div>
+
+    <div class="stagebox">
+      <div class="screen"><canvas id="c" width="360" height="640"></canvas></div>
+      <div class="transport">
+        <button id="play" type="button" aria-label="หยุด">❚❚</button>
+        <input id="seek" type="range" min="0" max="1000" value="0" aria-label="ตำแหน่งในคลิป">
+        <span class="time" id="time">0.0 / 0.0 วิ</span>
+      </div>
+      <p class="meta" id="meta"></p>
+    </div>
+  </section>
+</div>
+
+<script src="characters.js"></script>
+<script src="looks.js"></script>
+<script src="rig.js"></script>
+<script src="scenes.js"></script>
+<script src="props.js"></script>
+<script src="stage.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const CH = CharLib.CHARACTERS, POSES = CharLib.POSES, LOOKS = LookLib.LOOKS, SCENES = SceneLib.SCENES;
+  const ANIMAL_TH = { rabbit: 'กระต่าย', tortoise: 'เต่า', cat: 'แมว', dog: 'หมา', fox: 'จิ้งจอก', bear: 'หมี', pig: 'หมู', mouse: 'หนู', panda: 'แพนด้า', frog: 'กบ' };
+  const nameOf = (id) => CH[id].label || ANIMAL_TH[id] || id;
+  const SCENE_TH = { meadow: 'ทุ่งหญ้า', sunset: 'พระอาทิตย์ตก', night: 'กลางคืน', winter: 'หิมะ', desert: 'ทะเลทราย', beach: 'ชายหาด', forest: 'ป่า', city: 'เมือง' };
+  const ASPECTS = { '9:16': { size: [360, 640], th: 'แนวตั้ง', use: 'TikTok, Reels, Shorts' }, '16:9': { size: [640, 360], th: 'แนวนอน', use: 'YouTube, Facebook' }, '1:1': { size: [480, 480], th: 'จัตุรัส', use: 'โพสต์ฟีด' } };
+  const SAMPLES = [
+    { id: 'people', file: 'stories/people.json', label: 'ตลาดเช้า' },
+    { id: 'rabbit', file: 'stories/rabbit-tortoise.json', label: 'กระต่ายกับเต่า' },
+    { id: 'showcase', file: 'stories/showcase.json', label: 'เพื่อนในป่า' }
+  ];
+  const MAX_CAST = 4;
+  const state = { cast: ['boy', 'vendor'], scene: 'city', look: 'pastel', aspect: '9:16', storyId: 'mine', stories: {}, t: 0, playing: true, total: 1, images: {} };
+
+  /* ---------- story building: AI gives words + who/pose; the page owns positions and camera ---------- */
+  const SPACING = 230;
+  function layoutShot(shot, i) {
+    const ids = shot.actors.map((a) => a.id).filter((id) => CH[id]).slice(0, MAX_CAST);
+    const n = Math.max(1, ids.length), dur = Math.min(8, Math.max(2.5, +shot.dur || 4)), actors = {};
+    ids.forEach((id, k) => {
+      const a = shot.actors.find((x) => x.id === id), pose = POSES.includes(a.pose) ? a.pose : 'idle';
+      const x = (k - (n - 1) / 2) * SPACING, moving = pose === 'walk' || pose === 'run';
+      actors[id] = { x: moving ? [[0, x - 70], [dur, x + 70]] : x, pose, ...(k >= n / 2 && !moving && n > 1 ? { facing: -1 } : {}) };
+    });
+    const span = (n - 1) * SPACING + 360, w = Math.max(760, span + 140);
+    return { id: 's' + (i + 1), dur, ...(shot.title ? { title: String(shot.title).slice(0, 40) } : {}), text: String(shot.text || '').slice(0, 120), cam: [[0, 15, -110, w, Math.max(500, w * 0.55)]], actors };
+  }
+  function buildStory(title, shots) {
+    return { title: String(title || 'คลิปของฉัน').slice(0, 60), track: false, scene: state.scene, style: state.look, shots: shots.map(layoutShot) };
+  }
+  function quickStory() { // what the stage shows while the viewer is choosing, before any AI script
+    const cast = state.cast.length ? state.cast : ['narrator'];
+    const idea = $('idea').value.trim().slice(0, 70) || 'คลิปของฉัน';
+    return buildStory('คลิปของฉัน', [
+      { title: 'คลิปของฉัน', text: idea, dur: 4, actors: cast.map((id, k) => ({ id, pose: k % 2 ? 'talk' : 'walk' })) },
+      { text: 'กด "AI เขียนบท" เพื่อสร้างเรื่องเต็ม', dur: 3.5, actors: cast.map((id) => ({ id, pose: 'happy' })) }
+    ]);
+  }
+
+  /* ---------- stage ---------- */
+  const canvas = $('c');
+  async function sampleStory(id) {
+    if (!state.stories[id]) { const s = SAMPLES.find((x) => x.id === id); state.stories[id] = await (await fetch(s.file)).json(); }
+    return state.stories[id];
+  }
+  async function refresh() {
+    let story;
+    if (state.storyId === 'mine') story = quickStory();
+    else if (state.storyId === 'ai') story = { ...state.stories.ai, scene: state.scene, style: state.look };
+    else story = await sampleStory(state.storyId);
+    const [W, H] = ASPECTS[state.aspect].size, dpr = Math.min(2, window.devicePixelRatio || 1);
+    state.total = window.init({ W: Math.round(W * dpr), H: Math.round(H * dpr), story, style: state.look, scene: state.scene });
+    canvas.style.width = W + 'px'; canvas.style.aspectRatio = W + ' / ' + H; canvas.style.height = 'auto';
+    if (state.t > state.total) state.t = 0;
+    $('meta').textContent = `${story.title} · ${LOOKS[state.look].label} · ${SCENE_TH[state.scene]} · ${state.aspect}`;
+    castPalette();
+  }
+  let last = performance.now(), tick = 0;
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (state.playing) { state.t += dt; if (state.t >= state.total) state.t = 0; }
+    try { window.draw(state.t); } catch (e) { /* stage not ready */ }
+    $('seek').value = String(Math.round(state.t / state.total * 1000));
+    $('time').textContent = `${state.t.toFixed(1)} / ${state.total.toFixed(1)} วิ`;
+    if ((tick = (tick + 1) % 3) === 0) castTick(state.t);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- 1. cast ---------- */
+  const tiles = [];
+  function buildCast() {
+    const box = $('cast');
+    for (const id of Object.keys(CH)) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.id = 'cast-' + id;
+      const cv = document.createElement('canvas'); cv.width = 200; cv.height = 200;
+      const badge = document.createElement('span'); badge.className = 'badge';
+      const label = document.createElement('b'); label.textContent = nameOf(id);
+      b.append(badge, cv, label); box.appendChild(b);
+      b.addEventListener('click', () => toggleCast(id));
+      tiles.push({ id, b, badge, ctx: cv.getContext('2d') });
+    }
+    syncCast();
+  }
+  function toggleCast(id) {
+    const i = state.cast.indexOf(id);
+    if (i >= 0) state.cast.splice(i, 1); else { if (state.cast.length >= MAX_CAST) state.cast.shift(); state.cast.push(id); }
+    syncCast(); showStory('mine');
+  }
+  function syncCast() {
+    for (const t of tiles) { const k = state.cast.indexOf(t.id); t.b.setAttribute('aria-pressed', String(k >= 0)); t.badge.textContent = k >= 0 ? k + 1 : ''; }
+    $('cast-count').textContent = `เลือกแล้ว ${state.cast.length}/${MAX_CAST}`;
+  }
+  let castP;
+  function castPalette() { const look = LOOKS[state.look], base = SCENES[state.scene]; castP = look.palette ? look.palette(base) : base; }
+  function castTick(t) {
+    const look = LOOKS[state.look], tq = look.stepFps ? Math.floor(t * look.stepFps) / look.stepFps : t;
+    for (const tile of tiles) {
+      const c = tile.ctx, sel = state.cast.includes(tile.id);
+      c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
+      const g = c.createLinearGradient(0, 0, 0, 200); g.addColorStop(0, castP.skyTop); g.addColorStop(1, castP.skyBot); c.fillStyle = g; c.fillRect(0, 0, 200, 200);
+      c.fillStyle = castP.grass; c.fillRect(0, 168, 200, 32);
+      c.translate(92, 172); c.scale(0.62, 0.62);
+      Rig.draw(c, tile.id, sel ? 'walk' : 'idle', tq, castP, { look, fx: false });
+      c.restore(); LookLib.post(c, look, 200, 200, tq);
+    }
+  }
+
+  /* ---------- 2-4. chips ---------- */
+  function chips(boxId, items, key) {
+    const box = $(boxId); box.innerHTML = '';
+    for (const it of items) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = it.id;
+      b.innerHTML = it.label + (it.note ? '<small>' + it.note + '</small>' : '');
+      b.addEventListener('click', () => { state[key] = it.id; syncChips(); refresh(); });
+      box.appendChild(b);
+    }
+  }
+  function syncChips() {
+    for (const [box, key] of [['scenes', 'scene'], ['looks', 'look']]) for (const b of $(box).children) b.setAttribute('aria-pressed', String(b.dataset.id === state[key]));
+    for (const b of $('aspects').children) b.setAttribute('aria-pressed', String(b.dataset.id === state.aspect));
+    for (const b of $('stories').children) b.setAttribute('aria-pressed', String(b.dataset.id === state.storyId));
+  }
+  function buildAspects() {
+    const box = $('aspects');
+    for (const [id, a] of Object.entries(ASPECTS)) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'aspect'; b.dataset.id = id;
+      const [w, h] = a.size, k = 34 / Math.max(w, h); const i = document.createElement('i'); i.style.width = w * k + 'px'; i.style.height = h * k + 'px';
+      b.append(i, document.createTextNode(`${id} ${a.th}`)); const s = document.createElement('small'); s.textContent = a.use; b.append(s);
+      b.addEventListener('click', () => { state.aspect = id; syncChips(); refresh(); });
+      box.appendChild(b);
+    }
+  }
+  function buildStories() {
+    const box = $('stories'); box.innerHTML = '';
+    const items = [{ id: 'mine', label: 'ตัวเลือกของฉัน' }, ...(state.stories.ai ? [{ id: 'ai', label: 'บทจาก AI', note: state.stories.ai.title }] : []), ...SAMPLES.map((s) => ({ ...s, note: 'ตัวอย่าง' }))];
+    for (const it of items) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = it.id;
+      b.innerHTML = it.label + (it.note ? '<small>' + it.note + '</small>' : '');
+      b.addEventListener('click', () => showStory(it.id)); box.appendChild(b);
+    }
+    syncChips();
+  }
+  function showStory(id) { state.storyId = id; state.t = 0; syncChips(); refresh(); }
+
+  /* ---------- images ---------- */
+  for (const sec of ['cast', 'scene', 'look', 'aspect', 'story']) {
+    $('img-' + sec).addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0]; if (!f) return;
+      state.images[sec] = f; showThumb(sec); e.target.value = '';
+      if (sec === 'aspect') aspectFromImage(f);
+      else note(sec, 'ใส่ภาพแล้ว กด AI ช่วยคิด เพื่อให้ AI ดูภาพนี้' + (sec === 'story' ? ' แล้วกด AI เขียนบท' : ''));
+    });
+  }
+  function showThumb(sec) {
+    const box = $('thumb-' + sec), f = state.images[sec]; box.innerHTML = '';
+    if (!f) { box.hidden = true; return; }
+    const img = document.createElement('img'); img.alt = 'ภาพอ้างอิง'; img.src = URL.createObjectURL(f);
+    const name = document.createElement('span'); name.textContent = f.name;
+    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'เอาออก'; rm.addEventListener('click', () => { delete state.images[sec]; showThumb(sec); });
+    box.append(img, name, rm); box.hidden = false;
+  }
+  function aspectFromImage(f) {
+    const img = new Image(); img.onload = () => {
+      const r = img.naturalWidth / img.naturalHeight, id = r < 0.8 ? '9:16' : r > 1.25 ? '16:9' : '1:1';
+      state.aspect = id; syncChips(); refresh(); note('aspect', `ภาพนี้กว้าง ${img.naturalWidth} × สูง ${img.naturalHeight} จึงเลือก ${id} ${ASPECTS[id].th}`);
+    }; img.src = URL.createObjectURL(f);
+  }
+  function note(sec, text, err) { const n = $('note-' + sec); n.textContent = text; n.hidden = !text; n.classList.toggle('err', !!err); }
+
+  /* ---------- AI (sample capability) ---------- */
+  let sample = null, imagesOk = false;
+  const ERR = { not_granted: 'ยังไม่ได้อนุญาตให้หน้านี้ใช้ Claude', sampling_disabled: 'บัญชีนี้ใช้ Claude จากหน้านี้ไม่ได้', rate_limited: 'เรียกใช้บ่อยเกินไป รอสักครู่แล้วลองใหม่', image_rejected: 'ใช้ภาพนี้ไม่ได้ ลองภาพ JPG หรือ PNG อื่น', invalid_json: 'AI ตอบกลับไม่ครบ ลองกดอีกครั้ง', refused: 'AI ไม่ตอบโจทย์นี้ ลองเปลี่ยนไอเดีย', session_expired: 'ต้องเข้าสู่ระบบใหม่' };
+  const errText = (e) => ERR[e && e.code] || 'ติดต่อ AI ไม่สำเร็จ ลองใหม่อีกครั้ง';
+  const castList = () => Object.keys(CH).map((id) => `${id} (${nameOf(id)}${CH[id].template === 'human' ? ', คน' : ', สัตว์'})`).join(', ');
+  const idea = () => $('idea').value.trim() || '(ไม่ได้ระบุ)';
+  function withImage(sec, prompt) {
+    const f = state.images[sec];
+    if (f && imagesOk) return [prompt + '\nมีภาพอ้างอิงแนบมาด้วย ให้ใช้ภาพนี้ประกอบการตัดสินใจ', { images: [f] }];
+    return [prompt, {}];
+  }
+  const PROMPTS = {
+    cast: () => withImage('cast', `คุณช่วยเลือกตัวละครสำหรับคลิปสั้นแอนิเมชันภาษาไทย ไอเดียคลิป: "${idea()}"\nตัวละครที่มี: ${castList()}\nเลือก 2-4 ตัวที่เหมาะที่สุด ถ้ามีภาพแนบ ให้เลือกตัวที่ใกล้เคียงคน/สัตว์ในภาพ\nตอบเป็น JSON เท่านั้น: {"ids":["id",...],"reason":"เหตุผลสั้นๆ ภาษาไทย 1 ประโยค"}`),
+    scene: () => withImage('scene', `เลือกฉากให้คลิปสั้น ไอเดีย: "${idea()}"\nฉากที่มี: ${Object.entries(SCENE_TH).map(([k, v]) => k + ' (' + v + ')').join(', ')}\nถ้ามีภาพแนบ ให้เลือกฉากที่ใกล้เคียงภาพ\nตอบเป็น JSON เท่านั้น: {"scene":"id","reason":"เหตุผลสั้นๆ ภาษาไทย"}`),
+    look: () => withImage('look', `เลือกสไตล์ภาพให้คลิปสั้น ไอเดีย: "${idea()}"\nสไตล์ที่มี: ${Object.entries(LOOKS).map(([k, v]) => k + ' (' + v.label + ')').join(', ')}\nถ้ามีภาพแนบ ให้เลือกสไตล์ที่ใกล้เคียงลายเส้นและสีของภาพ\nตอบเป็น JSON เท่านั้น: {"style":"id","reason":"เหตุผลสั้นๆ ภาษาไทย"}`),
+    aspect: () => [`คลิปสั้นไอเดีย "${idea()}" ควรใช้สัดส่วนจอไหน ตัวเลือก: 9:16 (TikTok/Reels/Shorts), 16:9 (YouTube/Facebook), 1:1 (โพสต์ฟีด)\nตอบเป็น JSON เท่านั้น: {"aspect":"9:16|16:9|1:1","reason":"เหตุผลสั้นๆ ภาษาไทย"}`, { modelTier: 'quick' }]
+  };
+  const APPLY = {
+    cast(r) { const ids = (r.ids || []).filter((id) => CH[id]).slice(0, MAX_CAST); if (!ids.length) throw { code: 'invalid_json' }; state.cast = ids; syncCast(); showStory('mine'); return `${ids.map(nameOf).join(', ')}: ${r.reason || ''}`; },
+    scene(r) { if (!SCENES[r.scene]) throw { code: 'invalid_json' }; state.scene = r.scene; syncChips(); refresh(); return `${SCENE_TH[r.scene]}: ${r.reason || ''}`; },
+    look(r) { if (!LOOKS[r.style]) throw { code: 'invalid_json' }; state.look = r.style; syncChips(); refresh(); return `${LOOKS[r.style].label}: ${r.reason || ''}`; },
+    aspect(r) { if (!ASPECTS[r.aspect]) throw { code: 'invalid_json' }; state.aspect = r.aspect; syncChips(); refresh(); return `${r.aspect}: ${r.reason || ''}`; }
+  };
+  async function askSection(sec, btn) {
+    if (!sample) { note(sec, 'AI ใช้ได้เมื่อเปิดหน้านี้ใน claude.ai เท่านั้น', true); return; }
+    btn.disabled = true; note(sec, 'AI กำลังคิด...');
+    try { const [p, o] = PROMPTS[sec](); const r = await sample.json(p, { modelTier: 'quick', ...o }); note(sec, 'AI เลือกให้: ' + APPLY[sec](r)); }
+    catch (e) { note(sec, errText(e), true); }
+    finally { btn.disabled = false; }
+  }
+  async function writeStory(btn) {
+    if (!sample) { note('story', 'AI ใช้ได้เมื่อเปิดหน้านี้ใน claude.ai เท่านั้น', true); return; }
+    const cast = state.cast.length ? state.cast : ['narrator'];
+    btn.disabled = true; note('story', 'AI กำลังเขียนบท อาจใช้เวลาครึ่งนาที...');
+    const [p, o] = withImage('story', `เขียนบทคลิปสั้นแอนิเมชันภาษาไทย ยาว 15-25 วินาที จากไอเดีย: "${idea()}"
+ตัวละครที่ใช้ได้ (ใช้ id ตามนี้เท่านั้น): ${cast.map((id) => id + ' = ' + nameOf(id)).join(', ')}
+ฉาก: ${SCENE_TH[state.scene]}
+ท่าที่ใช้ได้: idle (ยืน), walk (เดิน), run (วิ่ง), hop (กระโดด), sleep (นอน), shock (ตกใจ), happy (ดีใจ), sad (เศร้า), talk (พูด)
+กติกา: 3-5 ช็อต, ช็อตละ 3-5 วินาที, ประโยคบรรยายช็อตละไม่เกิน 70 ตัวอักษร ภาษาง่าย มีฮุกในช็อตแรก และข้อคิด/ตอนจบในช็อตสุดท้าย, ช็อตละ 1-4 ตัวละคร, ใส่ title เฉพาะช็อตแรก (ชื่อเรื่องสั้นๆ)
+ตอบเป็น JSON เท่านั้น: {"title":"ชื่อเรื่อง","shots":[{"title":"(เฉพาะช็อตแรก)","text":"บรรยาย","dur":4,"actors":[{"id":"...","pose":"..."}]}]}`);
+    try {
+      const r = await sample.json(p, { modelTier: 'default', cache: false, ...o });
+      if (!r || !Array.isArray(r.shots) || !r.shots.length) throw { code: 'invalid_json' };
+      const shots = r.shots.slice(0, 6).map((s) => ({ ...s, actors: (Array.isArray(s.actors) ? s.actors : []).filter((a) => a && CH[a.id]) })).filter((s) => s.actors.length);
+      if (!shots.length) throw { code: 'invalid_json' };
+      state.stories.ai = buildStory(r.title, shots); buildStories(); showStory('ai');
+      note('story', `ได้บท "${state.stories.ai.title}" ${shots.length} ช็อต กำลังเล่นบนจอ`);
+    } catch (e) { note('story', errText(e), true); }
+    finally { btn.disabled = false; }
+  }
+  document.querySelectorAll('[data-ai]').forEach((b) => b.addEventListener('click', () => (b.dataset.ai === 'story' ? writeStory(b) : askSection(b.dataset.ai, b))));
+  (async () => {
+    try { sample = window.claude ? await window.claude.use('sample') : null; } catch (e) { sample = null; }
+    if (sample) { try { imagesOk = !!(await sample.limits()).images; } catch (e) { imagesOk = false; } }
+    if (!sample) document.querySelectorAll('[data-ai]').forEach((b) => (b.title = 'ใช้ได้เมื่อเปิดใน claude.ai'));
+  })();
+
+  /* ---------- wire up ---------- */
+  chips('scenes', Object.keys(SCENES).map((id) => ({ id, label: SCENE_TH[id] })), 'scene');
+  chips('looks', Object.entries(LOOKS).map(([id, l]) => ({ id, label: l.label })), 'look');
+  buildAspects(); buildStories(); buildCast(); syncChips();
+  $('idea').addEventListener('change', () => { if (state.storyId === 'mine') refresh(); });
+  $('play').addEventListener('click', () => { state.playing = !state.playing; $('play').textContent = state.playing ? '❚❚' : '▶'; $('play').setAttribute('aria-label', state.playing ? 'หยุด' : 'เล่น'); });
+  $('seek').addEventListener('input', (e) => { state.t = +e.target.value / 1000 * state.total; });
+  document.fonts && document.fonts.ready.then(() => refresh());
+  refresh().then(() => requestAnimationFrame(frame));
+})();
+</script>
