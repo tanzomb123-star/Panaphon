@@ -86,7 +86,7 @@
 
   /* ---------- frame post-processing (browser only) ---------- */
   const cache = {};
-  function off(key, w, h) { let o = cache[key]; if (!o || o.width !== w || o.height !== h) { o = cache[key] = document.createElement('canvas'); o.width = w; o.height = h; } return o; }
+  function off(name, w, h) { const key = `${name}:${w}x${h}`; let o = cache[key]; // per size, so canvases of different sizes don't thrash if (!o || o.width !== w || o.height !== h) { o = cache[key] = document.createElement('canvas'); o.width = w; o.height = h; } return o; }
   function noisePattern(c, key, size, dots, col) {
     if (!cache[key]) { const o = document.createElement('canvas'); o.width = o.height = size; const g = o.getContext('2d'); for (let i = 0; i < dots; i++) { g.fillStyle = col(hash(i * 3.3)); g.fillRect(hash(i) * size, hash(i + 77) * size, 1 + hash(i + 5) * 2, 1 + hash(i + 9) * 2); } cache[key] = o; }
     return c.createPattern(cache[key], 'repeat');
