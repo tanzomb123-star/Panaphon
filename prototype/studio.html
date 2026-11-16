@@ -120,6 +120,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
     <div class="steps">
       <div class="card" id="sec-theme">
         <div class="card-head"><h2>เลือกธีมเรื่อง</h2></div>
+        <div class="chips" id="cats"></div>
         <div class="themes" id="themes"></div>
         <p class="hint" id="theme-desc"></p>
       </div>
@@ -268,7 +269,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
   const CHAR_ID = Object.fromEntries(Object.keys(CH).map((id) => [nameOf(id), id]));
   /* ---------- themes: each one presets the whole studio and steers the AI writer ---------- */
   const THEMES = [
-    { id: 'tale', label: 'เรื่องเล่า', desc: 'เรื่องชีวิต นิทาน ข้อคิด อบอุ่นชวนติดตาม', look: 'paper', scene: 'meadow', cast: ['narrator', 'boy', 'grandma'], length: 30, tone: 'อบอุ่น ชวนติดตาม',
+    { id: 'tale', cat: 'story', why: 'คลิปเล่าเรื่องดีๆ ยาว 1 นาทีขึ้นไปได้รับการดันมากขึ้นในปี 2026', label: 'เรื่องเล่า', desc: 'เรื่องชีวิต นิทาน ข้อคิด อบอุ่นชวนติดตาม', look: 'paper', scene: 'meadow', cast: ['narrator', 'boy', 'grandma'], length: 30, tone: 'อบอุ่น ชวนติดตาม',
       examples: ['คุณยายเล่าตำนานต้นไทรหน้าบ้านที่ไม่มีใครกล้าตัด', 'เด็กชายช่วยแมวจรตัวหนึ่ง แล้วชีวิตเปลี่ยนไป', 'ของขวัญชิ้นสุดท้ายจากพ่อ'],
       archetypes: 'ปลายเรื่องก่อน, click-to-unpause, กั๊กคำตอบ, คำถามที่ทุกคนเคยสงสัย',
       rules: 'ตัวละครหลักชัด มีเป้าหมายและอุปสรรค อารมณ์ขึ้นลง จบด้วยข้อคิดหรือหักมุมที่อบอุ่น',
@@ -277,7 +278,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
         { role: 'ตั้งปม', dur: 4, onscreen: 'ยายรู้ความลับ', text: 'แต่คุณยายรู้เหตุผล… ที่ไม่เคยเล่าให้ใครฟัง', actors: [{ id: 'grandma', pose: 'talk' }, { id: 'boy', pose: 'idle' }] },
         { role: 'เฉลย', dur: 4, onscreen: 'ปู่ปลูกไว้ให้ยาย', text: 'ต้นไม้นี้… คุณปู่ปลูกไว้ในวันที่ขอยายแต่งงาน', actors: [{ id: 'grandma', pose: 'happy' }, { id: 'boy', pose: 'happy' }] },
         { role: 'CTA', dur: 3, onscreen: 'บ้านคุณมีไหม?', text: 'บ้านคุณมีของที่ห้ามทิ้งไหม เล่าในคอมเมนต์', actors: [{ id: 'narrator', pose: 'talk' }] }] } },
-    { id: 'ghost', label: 'เรื่องผี', desc: 'ตำนาน เรื่องหลอน บรรยากาศเย็นยะเยือก', look: 'noir', scene: 'night', cast: ['narrator', 'girl', 'grandma'], length: 45, tone: 'หลอน เย็นยะเยือก จังหวะช้า',
+    { id: 'ghost', cat: 'mystery', why: 'เรื่องสยองและเรื่องลึกลับแบบแอนิเมชันเป็นแนวช่องไม่เปิดหน้าที่เติบโต', label: 'เรื่องผี', desc: 'ตำนาน เรื่องหลอน บรรยากาศเย็นยะเยือก', look: 'noir', scene: 'night', cast: ['narrator', 'girl', 'grandma'], length: 45, tone: 'หลอน เย็นยะเยือก จังหวะช้า',
       examples: ['ห้องพักโรงแรมที่ไม่มีเลข 4', 'เสียงเรียกชื่อตอนตีสามในหมู่บ้าน', 'กระจกบานเก่าในบ้านยาย'],
       archetypes: 'ภาพปริศนา, ปลายเรื่องก่อน, กั๊กคำตอบ, click-to-unpause',
       rules: 'บรรยากาศหลอนไต่ระดับช้าๆ ใช้ความเงียบและ "…" บ่อย เปิดด้วยภาพหรือเสียงปริศนา ไม่ใช้ความรุนแรงหรือภาพสยองเกินไป จบด้วยปมที่ยังค้างหรือหักมุมสุดท้าย บอกชัดว่าเป็นเรื่องเล่าหรือตำนาน ห้ามอ้างว่าเป็นเรื่องจริงถ้าตรวจสอบไม่ได้',
@@ -286,7 +287,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
         { role: 'ตั้งปม', dur: 4, onscreen: 'แต่หนูส่อง', text: 'แต่คืนนั้น… หลานสาวแอบลุกมาส่อง', actors: [{ id: 'girl', pose: 'walk' }] },
         { role: 'หักมุม', dur: 4, onscreen: 'เงาไม่ขยับตาม', text: 'เงาในกระจก… ไม่ขยับตามเธอ', actors: [{ id: 'girl', pose: 'shock' }] },
         { role: 'CTA', dur: 3, onscreen: 'คุณกล้าส่องไหม?', text: 'ถ้าเป็นคุณ… จะกล้าส่องไหม', actors: [{ id: 'narrator', pose: 'talk' }] }] } },
-    { id: 'origin', label: 'ประวัติความเป็นมา', desc: 'ที่มาของสิ่งรอบตัว ประเพณี สถานที่', look: 'thai', scene: 'meadow', cast: ['narrator', 'teacher', 'vendor'], length: 45, tone: 'ชวนรู้ น่าเชื่อถือ',
+    { id: 'origin', cat: 'learn', why: 'คำถาม "ทำไม" ตรงกับสิ่งที่คนค้นหา คลิปที่ตอบคำถามแบบนี้มีคนดูจนจบมาก', label: 'ประวัติความเป็นมา', desc: 'ที่มาของสิ่งรอบตัว ประเพณี สถานที่', look: 'thai', scene: 'meadow', cast: ['narrator', 'teacher', 'vendor'], length: 45, tone: 'ชวนรู้ น่าเชื่อถือ',
       examples: ['ที่มาของข้าวเหนียวมะม่วง', 'ทำไมคนไทยไหว้แทนการจับมือ', 'ทำไมกรุงเทพฯ มีชื่อเต็มยาวมาก'],
       archetypes: 'คำถามที่ทุกคนเคยสงสัย, ครู, สวนกระแส, ตัวเลขแปลก',
       rules: 'เปิดด้วยคำถามหรือข้อเท็จจริงที่ขัดความเชื่อ แล้วเล่าที่มาตามลำดับเวลา ใส่ปี ชื่อ สถานที่ที่ตรวจสอบได้ แยกข้อเท็จจริงกับตำนานหรือทฤษฎีให้ชัด ปิดด้วยการเชื่อมกับปัจจุบัน',
@@ -295,7 +296,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
         { role: 'ตั้งปม', dur: 4, onscreen: 'มากกว่ามารยาท', text: 'แต่การไหว้… มีความหมายมากกว่ามารยาท', actors: [{ id: 'teacher', pose: 'idle' }, { id: 'vendor', pose: 'happy' }] },
         { role: 'เฉลย', dur: 5, onscreen: 'มือเปล่า = ไม่มีอาวุธ', text: 'มีทฤษฎีว่าการพนมมือ… คือการแสดงว่าไม่ได้ถืออาวุธ', actors: [{ id: 'narrator', pose: 'talk' }] },
         { role: 'CTA', dur: 3, onscreen: 'เซฟไว้เล่าต่อ', text: 'เซฟไว้… เล่าให้เพื่อนต่างชาติฟัง', actors: [{ id: 'teacher', pose: 'happy' }] }] } },
-    { id: 'doc', label: 'สารคดี', desc: 'เรื่องจริง ปริศนา วิทยาศาสตร์ เล่าแบบสารคดี', look: 'watercolor', scene: 'desert', cast: ['narrator', 'detective', 'doctor'], length: 60, tone: 'สุขุม หนักแน่น จังหวะช้า',
+    { id: 'doc', cat: 'learn', why: 'สารคดีสั้นแบบเล่าเรื่องดูยาวได้ และเหมาะกับช่องไม่เปิดหน้า', label: 'สารคดี', desc: 'เรื่องจริง ปริศนา วิทยาศาสตร์ เล่าแบบสารคดี', look: 'watercolor', scene: 'desert', cast: ['narrator', 'detective', 'doctor'], length: 60, tone: 'สุขุม หนักแน่น จังหวะช้า',
       examples: ['เมืองที่คนทั้งเมืองหายไปในคืนเดียว', 'หมอที่ค้นพบยาเพนิซิลลินโดยบังเอิญ', 'ปริศนาเสียงประหลาดใต้ทะเลลึก'],
       archetypes: 'ข้อเท็จจริงช็อก, ภาพปริศนา, ตัวเลขขัดสามัญสำนึก, คำถามที่ทุกคนเคยสงสัย, ปลายเรื่องก่อน',
       rules: 'โครง 6 จุด: ฮุก → ตั้งปม "แต่ไม่มีใครรู้ว่า…" → ย้อนเล่าตามเวลาพร้อมรายละเอียดจริง (ปี ชื่อ ตัวเลข) → หักมุมราว 70% → เฉลยหรือบอกตรงๆ ว่ายังไม่มีใครรู้ → CTA เดียว พากย์ช้าราว 2.2 คำต่อวินาที ห้ามแต่งตัวเลขหรือคำพูดของคนจริง ถ้าไม่แน่ใจให้ตัดทิ้ง',
@@ -304,7 +305,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
         { role: 'ตั้งปม', dur: 4, onscreen: 'ปี 1928', text: 'ปี 1928… หมอคนหนึ่งกลับจากพักร้อน', actors: [{ id: 'doctor', pose: 'walk' }] },
         { role: 'หักมุม', dur: 5, onscreen: 'เชื้อโรคหายไป', text: 'แต่รอบราบนจาน… เชื้อโรคหายไปหมด', actors: [{ id: 'doctor', pose: 'talk' }, { id: 'detective', pose: 'shock' }] },
         { role: 'CTA', dur: 3, onscreen: 'เซฟไว้', text: 'เซฟไว้… ตอนหน้าเล่าว่าทำไมเกือบไม่มีใครเชื่อ', actors: [{ id: 'narrator', pose: 'talk' }] }] } },
-    { id: 'cartoon', label: 'การ์ตูน', desc: 'สัตว์น่ารัก มุกตลก เด็กดูได้ทั้งบ้าน', look: 'comic', scene: 'forest', cast: ['rabbit', 'tortoise', 'fox'], length: 30, tone: 'สนุก สดใส มุกจังหวะเร็ว',
+    { id: 'cartoon', cat: 'story', why: 'นิทานแอนิเมชันที่มีข้อคิดเป็นแนวที่คนดูนานและรายได้ต่อวิวค่อนข้างดี', label: 'การ์ตูน', desc: 'สัตว์น่ารัก มุกตลก เด็กดูได้ทั้งบ้าน', look: 'comic', scene: 'forest', cast: ['rabbit', 'tortoise', 'fox'], length: 30, tone: 'สนุก สดใส มุกจังหวะเร็ว',
       examples: ['กระต่ายอยากบินได้เหมือนนก', 'หมูน้อยเปิดร้านขนมในป่า', 'หมีขี้เซาตื่นสายในวันสำคัญ'],
       archetypes: 'click-to-unpause, นักมายากล, กั๊กคำตอบ, ปลายเรื่องก่อน',
       rules: 'ตลก สดใส ตัวละครสัตว์มีนิสัยชัด มีมุกที่เข้าใจได้ในวินาทีเดียว เด็กดูได้ ไม่รุนแรง ข้อคิดสั้นๆ ตอนจบ',
@@ -312,8 +313,73 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
         { role: 'ฮุก', dur: 3, onscreen: 'กระต่ายจะบิน!', text: 'วันนี้กระต่าย… จะบินให้ได้!', actors: [{ id: 'rabbit', pose: 'hop' }] },
         { role: 'เร่ง', dur: 4, onscreen: 'ครั้งที่ 37', text: 'กระโดดครั้งที่สามสิบเจ็ด… ยังไม่ลอยเลย', actors: [{ id: 'rabbit', pose: 'sad' }, { id: 'fox', pose: 'happy' }] },
         { role: 'หักมุม', dur: 4, onscreen: 'เต่ามีไอเดีย', text: 'แต่เต่ามีไอเดีย… ที่ไม่มีใครคาด', actors: [{ id: 'tortoise', pose: 'talk' }, { id: 'rabbit', pose: 'shock' }] },
-        { role: 'CTA', dur: 3, onscreen: 'เดาสิไอเดียอะไร', text: 'เดาสิ… เต่าคิดอะไรไว้ พิมพ์ในคอมเมนต์', actors: [{ id: 'tortoise', pose: 'happy' }, { id: 'rabbit', pose: 'happy' }] }] } }
+        { role: 'CTA', dur: 3, onscreen: 'เดาสิไอเดียอะไร', text: 'เดาสิ… เต่าคิดอะไรไว้ พิมพ์ในคอมเมนต์', actors: [{ id: 'tortoise', pose: 'happy' }, { id: 'rabbit', pose: 'happy' }] }] } },
+    { id: 'microdrama', cat: 'story', why: 'ละครสั้นเป็นตอนเป็นแนวที่โตแรงที่สุดตอนนี้ Deloitte คาดรายได้ปี 2026 เกิน 7.8 พันล้านดอลลาร์', label: 'ละครสั้นเป็นตอน', desc: 'ดราม่าครอบครัว ความรัก ตอนละนาที จบค้างทุกตอน', look: 'pastel', scene: 'city', cast: ['mom', 'dad', 'girl'], length: 60, tone: 'ดราม่า เข้มข้น ลุ้นตอนต่อ',
+      examples: ['ลูกสาวพบว่าพ่อเก็บความลับเรื่องบ้านไว้ 20 ปี', 'แม่ค้าข้างบ้านคือแม่แท้ๆ ที่ตามหามาตลอด', 'จดหมายที่ส่งผิดบ้านเปลี่ยนชีวิตสองครอบครัว'],
+      archetypes: 'click-to-unpause, ปลายเรื่องก่อน, กั๊กคำตอบ',
+      rules: 'เขียนเป็น "ตอนที่ 1" ของซีรีส์ เปิดกลางเหตุการณ์ขัดแย้ง ตัวละครมีเป้าหมายและความลับ อารมณ์ไต่ขึ้นทุกช็อต จบด้วย cliffhanger ที่ทำให้อยากดูตอนต่อไป CTA คือ "ติดตามตอน 2"' },
+    { id: 'pov', cat: 'story', why: 'คลิป POV ที่เล่าจากมุมมองสมมติยังติดอันดับเทรนด์ TikTok', label: 'POV สมมติ', desc: '"POV: คุณคือ..." พาคนดูเข้าไปอยู่ในเหตุการณ์', look: 'minimal', scene: 'city', cast: ['narrator', 'boy', 'teacher'], length: 30, tone: 'สนุก จับใจ เข้าถึงง่าย',
+      examples: ['POV: คุณตื่นมาแล้วทุกคนพูดความในใจออกมาดังๆ', 'POV: คุณเป็นนักเรียนคนเดียวที่ทำการบ้านมา', 'POV: คุณได้ยินแมวที่บ้านพูดครั้งแรก'],
+      archetypes: 'click-to-unpause, นักมายากล, ปลายเรื่องก่อน',
+      rules: 'ช็อตแรกขึ้นตัวหนังสือ "POV: ..." ชัดเจน เล่าด้วยสรรพนาม "คุณ" ทั้งเรื่อง สถานการณ์ต้องเข้าใจได้ในวินาทีเดียวและคนดูรู้สึกว่าเกิดกับตัวเองได้ มีหักมุมหนึ่งครั้ง' },
+    { id: 'fable', cat: 'story', why: 'นิทานสั้นที่มีข้อคิดเหมาะกับครอบครัว คนดูซ้ำบ่อยและส่งต่อให้เด็ก', label: 'นิทานสอนใจ', desc: 'นิทานสัตว์แบบอีสป จบด้วยข้อคิดเดียว', look: 'pastel', scene: 'meadow', cast: ['rabbit', 'tortoise', 'bear'], length: 45, tone: 'อบอุ่น นุ่มนวล เหมาะกับเด็ก',
+      examples: ['หมีที่ไม่ยอมแบ่งน้ำผึ้งให้เพื่อน', 'กบที่คิดว่าบ่อของตัวเองใหญ่ที่สุดในโลก', 'หนูตัวเล็กช่วยราชสีห์ออกจากตาข่าย'],
+      archetypes: 'ปลายเรื่องก่อน, กั๊กคำตอบ, คำถามที่ทุกคนเคยสงสัย',
+      rules: 'ตัวละครสัตว์นิสัยชัด ความขัดแย้งเดียว ภาษาง่ายเด็กเข้าใจ จบด้วยข้อคิดประโยคเดียวที่จำง่าย ไม่รุนแรง' },
+    { id: 'funny', cat: 'story', why: 'คอนเทนต์ "เรียลๆ" เรื่องจริงในชีวิตที่หัวเราะด้วยกันได้ กำลังมาแรงในไทยปี 2026', label: 'ตลกชีวิตประจำวัน', desc: 'มุกที่ทุกคนเคยเจอ "คนไทยตอน..." ดูแล้วแท็กเพื่อน', look: 'comic', scene: 'city', cast: ['dad', 'mom', 'boy'], length: 15, tone: 'ฮา รู้สึกร่วม จังหวะเร็ว',
+      examples: ['แม่ตอนหาของไม่เจอ vs แม่ตอนเราหาของไม่เจอ', 'พ่อตอนบอกว่า "เดี๋ยวพ่อซ่อมเอง"', 'ตอนได้ยินว่าเงินเดือนออกพรุ่งนี้'],
+      archetypes: 'click-to-unpause, ตัวเลขแปลก, สวนกระแส',
+      rules: 'มุกเดียว เข้าใจได้ใน 1 วินาที เป็นสถานการณ์ที่คนไทยส่วนใหญ่เคยเจอ ใช้คอนทราสต์หรือการเกินจริงแบบน่ารัก จบด้วยพันช์ไลน์ ไม่ล้อปมด้อยหรือเหยียดใคร CTA ชวน "แท็กคนที่เป็นแบบนี้" ห้ามเด็ดขาด ให้ใช้ "คอมเมนต์ว่าบ้านคุณเป็นไหม" แทน' },
+    { id: 'mystery', cat: 'mystery', why: 'เรื่องปริศนาที่ยังไขไม่ได้ทำให้คนค้างคำถามและคอมเมนต์ทฤษฎีของตัวเอง', label: 'ปริศนาไขไม่ได้', desc: 'เหตุการณ์จริงที่ยังไม่มีคำตอบ ให้คนดูช่วยเดา', look: 'noir', scene: 'city', cast: ['detective', 'narrator', 'doctor'], length: 60, tone: 'ลึกลับ สุขุม ชวนคิด',
+      examples: ['เรือที่ลอยกลับมาโดยไม่มีลูกเรือสักคน', 'สัญญาณจากอวกาศ 72 วินาทีที่ไม่เคยมาอีกเลย', 'เมืองที่นาฬิกาทุกเรือนหยุดพร้อมกัน'],
+      archetypes: 'ข้อเท็จจริงช็อก, นักสืบ, ปลายเรื่องก่อน, กั๊กคำตอบ',
+      rules: 'ใช้เหตุการณ์ที่มีบันทึกจริงเท่านั้น แยกข้อเท็จจริงกับทฤษฎีชัดเจน ("มีทฤษฎีว่า...") เล่าเบาะแสทีละชิ้น วางทฤษฎีที่น่าเชื่อสุดไว้ท้าย และบอกตรงๆ ว่ายังไม่มีใครรู้คำตอบ CTA คือให้คอมเมนต์ทฤษฎีของตัวเอง' },
+    { id: 'belief', cat: 'mystery', why: 'เรื่องความเชื่อและเคล็ดลับแบบไทยเป็นเรื่องที่คนไทยคุยและส่งต่อกันมาก', label: 'ความเชื่อไทย', desc: 'มูเตลู เคล็ดลับโบราณ ข้อห้ามที่ยายเคยบอก', look: 'thai', scene: 'night', cast: ['grandma', 'vendor', 'girl'], length: 30, tone: 'ลึกลับ อบอุ่นแบบบ้านๆ',
+      examples: ['ทำไมยายห้ามตัดเล็บตอนกลางคืน', 'ความเชื่อเรื่องแมวดำเดินผ่านหน้า', 'ทำไมคนโบราณห้ามนอนหันหัวไปทางทิศตะวันตก'],
+      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ครู, สวนกระแส',
+      rules: 'นำเสนอในฐานะความเชื่อหรือคติชาวบ้าน ห้ามรับประกันผลเรื่องโชคลาภ ห้ามชวนซื้อของขลัง ถ้ามีคำอธิบายทางวิทยาศาสตร์หรือเหตุผลในชีวิตจริงให้เล่าด้วย ปิดด้วยคำถามให้คนเล่าความเชื่อบ้านตัวเอง' },
+    { id: 'explainer', cat: 'learn', why: 'คลิปอธิบายที่ตอบคำถามที่คนค้นหาได้ดูจนจบสูง และ Google เริ่มแสดงคลิปสั้นในผลค้นหา', label: 'อธิบายใน 1 นาที', desc: 'ความรู้รอบตัว "ทำไม..." "เกิดอะไรขึ้นเมื่อ..."', look: 'minimal', scene: 'meadow', cast: ['teacher', 'boy', 'girl'], length: 45, tone: 'ชัด กระชับ ฉลาดแบบเป็นกันเอง',
+      examples: ['ทำไมท้องฟ้าตอนเย็นเป็นสีส้ม', 'ทำไมเรามักง่วงหลังกินข้าวเที่ยง', 'ทำไมตัวเลขบนแป้นโทรศัพท์กับเครื่องคิดเลขสลับกัน'],
+      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ครู, สวนกระแส',
+      rules: 'ตอบคำถามเดียวให้จบ เปิดด้วยคำถามที่คนพิมพ์ค้นจริง ให้คำตอบสั้นภายใน 10 วินาทีแรกแล้วค่อยขยายเหตุผล ใช้การเปรียบเทียบกับของใกล้ตัว ข้อเท็จจริงต้องตรวจสอบได้ CTA "เซฟไว้"' },
+    { id: 'whatif', cat: 'learn', why: 'สถานการณ์ "ถ้า..." ทำให้คนอยากรู้คำตอบและถกเถียงในคอมเมนต์', label: 'ถ้าเกิด...จะเป็นยังไง', desc: 'วิทยาศาสตร์สนุก สมมติสถานการณ์แปลกๆ', look: 'chalk', scene: 'night', cast: ['teacher', 'doctor', 'boy'], length: 45, tone: 'ตื่นเต้น อยากรู้ อิงวิทยาศาสตร์',
+      examples: ['ถ้าโลกหยุดหมุน 1 วินาทีจะเกิดอะไรขึ้น', 'ถ้ามนุษย์ไม่ต้องนอนเลย', 'ถ้าดวงจันทร์หายไปคืนนี้'],
+      archetypes: 'คำถามที่ทุกคนเคยสงสัย, หมอดู, ตัวเลขแปลก',
+      rules: 'เล่าผลที่ตามมาเป็นลำดับเวลา (1 วินาที 1 วัน 1 ปี) ทุกขั้นอิงหลักวิทยาศาสตร์ที่ยอมรับ บอกชัดเมื่อเป็นการคาดการณ์ เก็บผลที่ช็อกที่สุดไว้ท้าย' },
+    { id: 'history', cat: 'learn', why: 'ประวัติศาสตร์เล่าแบบเรื่องสั้นเป็นแนวช่องไม่เปิดหน้าที่ดูได้ตลอด ไม่ตกยุค', label: 'ประวัติศาสตร์', desc: 'เหตุการณ์สำคัญของไทยและโลก เล่าเหมือนหนัง', look: 'paper', scene: 'sunset', cast: ['narrator', 'detective', 'grandma'], length: 60, tone: 'ยิ่งใหญ่ น่าติดตาม น่าเชื่อถือ',
+      examples: ['คืนเดียวที่เปลี่ยนชะตากรุงศรีอยุธยา', 'จดหมายที่มาถึงช้าไป 1 วันจนแพ้สงคราม', 'ทำไมสยามไม่เคยเป็นอาณานิคม'],
+      archetypes: 'ปลายเรื่องก่อน, ข้อเท็จจริงช็อก, สวนกระแส',
+      rules: 'เปิดด้วยช่วงพีคของเหตุการณ์ก่อน แล้วย้อนเล่า ใส่ปี ชื่อ สถานที่ที่ตรวจสอบได้ แยกหลักฐานกับการตีความ ไม่วาดหน้าบุคคลจริงให้ชัด เลี่ยงประเด็นที่อาจละเมิดกฎหมายหรือความอ่อนไหวทางการเมือง' },
+    { id: 'psych', cat: 'learn', why: 'จิตวิทยาและการพัฒนาตัวเองแบบแอนิเมชันคนแชร์ต่อและเซฟไว้ดูซ้ำ', label: 'จิตวิทยาน่ารู้', desc: 'พฤติกรรมคน เทคนิคใจ ทำไมเราถึงทำแบบนั้น', look: 'watercolor', scene: 'sunset', cast: ['narrator', 'girl', 'dad'], length: 45, tone: 'นุ่มนวล เข้าใจ ไม่ตัดสิน',
+      examples: ['ทำไมเราจำคำติได้นานกว่าคำชม', 'กฎ 2 นาทีที่ทำให้เลิกผัดวันประกันพรุ่ง', 'ทำไมยิ่งมีตัวเลือกเยอะยิ่งเลือกไม่ได้'],
+      archetypes: 'ครู, สวนกระแส, คำถามที่ทุกคนเคยสงสัย',
+      rules: 'อธิบายแนวคิดเดียวพร้อมตัวอย่างในชีวิตจริง อ้างงานวิจัยเฉพาะที่มีจริง (ถ้าไม่แน่ใจให้พูดกว้างๆ) ให้วิธีใช้ได้ทันทีหนึ่งข้อ ไม่วินิจฉัยโรคทางใจ' },
+    { id: 'health', cat: 'learn', why: 'ความรู้สุขภาพใกล้ตัวมีคนค้นหาตลอด แต่ต้องระวังข้อมูลผิด', label: 'สุขภาพใกล้ตัว', desc: 'ร่างกายเราทำงานยังไง ความเชื่อผิดๆ ที่ควรรู้', look: 'minimal', scene: 'city', cast: ['doctor', 'dad', 'grandma'], length: 45, tone: 'เป็นมิตร ชัดเจน น่าเชื่อถือ',
+      examples: ['ดื่มน้ำวันละ 8 แก้วจริงหรือ', 'ทำไมเวลาหิวถึงอารมณ์เสียง่าย', 'นั่งนานๆ ส่งผลต่อร่างกายยังไง'],
+      archetypes: 'สวนกระแส, คำถามที่ทุกคนเคยสงสัย, ครู',
+      rules: 'ใช้ข้อมูลจากหน่วยงานสาธารณสุขหรืองานวิจัยที่ยอมรับเท่านั้น ห้ามรับประกันการรักษา ห้ามแนะนำยาหรืออาหารเสริม จบด้วยคำแนะนำให้ปรึกษาแพทย์เมื่อมีอาการ' },
+    { id: 'money', cat: 'life', why: 'การเงินส่วนตัวเป็นหมวดที่โตเร็วในเทรนด์ TikTok กลางปี 2026 และรายได้ต่อวิวสูง', label: 'การเงินใกล้ตัว', desc: 'ออมเงิน ใช้เงิน กับดักหนี้ เล่าเป็นเรื่อง', look: 'minimal', scene: 'city', cast: ['dad', 'mom', 'vendor'], length: 45, tone: 'จริงใจ เข้าใจง่าย ไม่ขายฝัน',
+      examples: ['ทำไมเงินเดือนขึ้นแต่เงินเก็บไม่เพิ่ม', 'กาแฟวันละแก้ว 10 ปีเท่ากับเท่าไหร่', 'ผ่อน 0% ฟรีจริงหรือ'],
+      archetypes: 'ตัวเลขแปลก, สวนกระแส, ครู, นักทดลอง',
+      rules: 'คำนวณตัวเลขให้ถูกและแสดงวิธีคิด ห้ามแนะนำให้ซื้อหุ้นหรือสินทรัพย์ตัวใดตัวหนึ่ง ห้ามรับประกันผลตอบแทน บอกว่าเป็นความรู้ทั่วไปไม่ใช่คำแนะนำการลงทุน' },
+    { id: 'founder', cat: 'life', why: 'เรื่องเส้นทางผู้ก่อตั้งเติบโต 210% ใน 30 วันตามข้อมูลกลางปี 2026 (ตัวเลขจากผู้ให้บริการเครื่องมือ)', label: 'เส้นทางธุรกิจ', desc: 'จากศูนย์สู่ร้านดัง ล้มแล้วลุก เล่าแบบเรื่องจริง', look: 'pixel', scene: 'city', cast: ['vendor', 'narrator', 'dad'], length: 60, tone: 'สู้ชีวิต สร้างแรงบันดาลใจ จริงใจ',
+      examples: ['แม่ค้าข้าวมันไก่ที่ขายวันแรกได้ 3 จาน', 'ร้านที่เกือบเจ๊งแต่รอดเพราะลูกค้าคนเดียว', 'จากแผงลอยสู่แฟรนไชส์ 200 สาขา'],
+      archetypes: 'ปลายเรื่องก่อน, ตัวเลขแปลก, นักทดลอง',
+      rules: 'โครง: จุดเริ่มต้นที่ยาก → ความล้มเหลวที่เจ็บที่สุด → การตัดสินใจที่เปลี่ยนเกม → ผลลัพธ์ที่วัดได้ → บทเรียนหนึ่งข้อ ถ้าเป็นธุรกิจจริงต้องใช้ข้อมูลที่ตรวจสอบได้ ถ้าแต่งให้บอกว่าเป็นเรื่องสมมติ' },
+    { id: 'book', cat: 'life', why: 'สรุปหนังสือแบบแอนิเมชันมีคนค้นชื่อหนังสือตลอด เป็นคอนเทนต์ที่ไม่ตกยุค', label: 'สรุปหนังสือ', desc: 'แก่นหนังสือดังใน 1 นาที พร้อมไอเดียที่ใช้ได้จริง', look: 'paper', scene: 'meadow', cast: ['narrator', 'teacher', 'boy'], length: 60, tone: 'ฉลาด กระชับ เป็นกันเอง',
+      examples: ['สรุป Atomic Habits ใน 60 วินาที', 'ไอเดียเดียวจาก Rich Dad Poor Dad ที่ควรรู้', 'สรุป The Psychology of Money 3 ข้อ'],
+      archetypes: 'ครู, ตัวเลขแปลก, กั๊กคำตอบ',
+      rules: 'บอกชื่อหนังสือและผู้เขียนให้ถูก สรุปด้วยคำของตัวเอง ห้ามคัดลอกข้อความยาว เลือก 1-3 ไอเดียหลักพร้อมตัวอย่างใช้จริง ปิดด้วยไอเดียที่ทำได้ทันที' },
+    { id: 'lifelesson', cat: 'life', why: 'เรื่องจุดเริ่มต้นถึงความสำเร็จสร้างความรู้สึกร่วมและคนจดจำได้', label: 'ข้อคิดชีวิต', desc: 'เรื่องสั้นแรงบันดาลใจ สู้ชีวิต ครอบครัว', look: 'watercolor', scene: 'sunset', cast: ['dad', 'boy', 'grandma'], length: 45, tone: 'ซึ้ง อบอุ่น ให้กำลังใจ',
+      examples: ['พ่อที่ขี่มอเตอร์ไซค์ส่งลูกเรียนทุกวัน 12 ปี', 'คำพูดประโยคเดียวของยายที่เปลี่ยนชีวิตหลาน', 'วันที่สอบตกคือวันที่ดีที่สุด'],
+      archetypes: 'ปลายเรื่องก่อน, click-to-unpause, กั๊กคำตอบ',
+      rules: 'มีช่วงเวลาที่จับใจหนึ่งจุด แสดงด้วยการกระทำมากกว่าคำสอน ข้อคิดสุดท้ายสั้นและไม่เทศนา หลีกเลี่ยงการเร้าอารมณ์เกินจริง' },
+    { id: 'food', cat: 'life', why: 'เรื่องอาหารและร้านดังเป็นสิ่งที่คนไทยหยุดดูและแชร์บ่อย', label: 'อาหาร & สตรีทฟู้ด', desc: 'ที่มาของเมนูดัง เคล็ดลับร้านเก่าแก่', look: 'pastel', scene: 'city', cast: ['vendor', 'mom', 'boy'], length: 30, tone: 'หิว อบอุ่น ชวนลอง',
+      examples: ['ทำไมผัดไทยถึงชื่อผัดไทย', 'ร้านก๋วยเตี๋ยวที่ขายมา 60 ปีโดยไม่ขึ้นราคา', 'ทำไมข้าวมันไก่ต้องกินกับซุป'],
+      archetypes: 'คำถามที่ทุกคนเคยสงสัย, ปลายเรื่องก่อน, กั๊กคำตอบ',
+      rules: 'ประวัติเมนูต้องตรวจสอบได้ ถ้าเป็นตำนานให้บอกว่าเป็นตำนาน ใส่รายละเอียดที่ทำให้หิว (เสียง สี กลิ่น) ปิดด้วยคำถามชวนคุยว่าร้านไหนอร่อยสุด' }
   ];
+  const CATS = [{ id: 'all', label: 'ทั้งหมด' }, { id: 'story', label: 'เล่าเรื่อง & บันเทิง' }, { id: 'mystery', label: 'ลึกลับ & หลอน' }, { id: 'learn', label: 'ความรู้' }, { id: 'life', label: 'ชีวิต เงิน & ธุรกิจ' }];
   const themeOf = () => THEMES.find((t) => t.id === state.theme);
   const LENGTHS = [15, 30, 45, 60].map((n) => ({ id: n, label: n + ' วิ' }));
   function serialize(m) {
@@ -371,7 +437,13 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
   }
   function showWarns(list) { const ul = $('warns'); ul.innerHTML = ''; for (const w of list) { const li = document.createElement('li'); li.textContent = w; ul.appendChild(li); } ul.hidden = !list.length; }
   function starterScript() { // the theme's hand-written example, shown before any AI call
-    const st = themeOf().starter; return serialize(st);
+    const th = themeOf(); if (th.starter) return serialize(th.starter);
+    const [a, b, c] = [th.cast[0], th.cast[1] || th.cast[0], th.cast[2] || th.cast[0]], ex = th.examples[0];
+    return serialize({ title: ex.slice(0, 40), shots: [
+      { role: 'ฮุก', dur: 3, onscreen: ex.slice(0, 18), text: ex + '…', actors: [{ id: a, pose: 'shock' }] },
+      { role: 'ตั้งปม', dur: 4, onscreen: 'แต่ไม่มีใครรู้…', text: 'แต่เรื่องนี้… มีอะไรมากกว่าที่คิด', actors: [{ id: b, pose: 'talk' }, { id: a, pose: 'idle' }] },
+      { role: 'เฉลย', dur: 4, onscreen: 'คำตอบคือ…', text: 'กด AI เขียนบท เพื่อเล่าเรื่องนี้ให้จบ', actors: [{ id: c, pose: 'happy' }] },
+      { role: 'CTA', dur: 3, onscreen: 'คิดว่ายังไง?', text: 'คุณคิดว่ายังไง… บอกไว้ในคอมเมนต์', actors: [{ id: a, pose: 'talk' }] }] });
   }
 
   /* ---------- stage ---------- */
@@ -566,6 +638,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
 - โครง: ฮุก → ตั้งปม → เร่งเดิมพัน (เชื่อมด้วย "แต่" หรือ "ดังนั้น" ไม่ใช่ "แล้วก็") → re-hook กลางคลิป ("แต่จุดที่ไม่มีใครคาดคือ…") → หักมุมราว 70% ของคลิป → เฉลยที่ปิดทุก open loop → CTA เดียวต้นทุนต่ำ (เซฟไว้ / คอมเมนต์คำตอบ) ห้าม engagement bait
 - ประโยคสั้นไม่เกิน 12 คำ ใส่ "…" ตรงจุดหยุดหายใจ (หลังฮุก ก่อนหักมุม ก่อนเฉลย) ความเร็วพากย์ราว 2.2-3 คำต่อวินาที
 - เปลี่ยนช็อตทุก 2-4 วินาที ไม่มีช่วงยืด ตอนจบวนกลับประโยคแรกได้ถ้าเป็นธรรมชาติ
+- คนดูเบื่อการเล่าเรียง 1-2-3: เปิดด้วยช่วงไฮไลต์ก่อน แล้วค่อยย้อนเล่า เล่าแบบจริงใจไม่ปรุงแต่ง
 - สัญญาในฮุกต้องตรงกับสิ่งที่ส่งมอบ ห้ามคลิกเบต ห้ามแต่งตัวเลข สถิติ หรือคำพูดของคนจริง เรื่องจริงต้องแยกข้อเท็จจริงกับทฤษฎี`;
   const ARCHETYPES = 'ข้อเท็จจริงช็อก, ปลายเรื่องก่อน, นักสืบ, ครู, นักมายากล, สวนกระแส, หมอดู, นักทดลอง, กั๊กคำตอบ, ตัวเลขแปลก, click-to-unpause (เฟรมแรกกลางเหตุการณ์), คำถามที่ทุกคนเคยสงสัย';
   const fmtLabel = () => themeOf().label;
@@ -696,7 +769,7 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
   function applyTheme(id) {
     const th = THEMES.find((t) => t.id === id); state.theme = id;
     Object.assign(state, { look: th.look, scene: th.scene, cast: th.cast.slice(), length: th.length, hooks: [], hook: -1, scriptAuto: true });
-    $('idea').value = th.examples[0]; $('theme-desc').textContent = `${th.label}: ${th.desc} · ตั้งให้แล้ว: ${LOOKS[th.look].label}, ${SCENE_TH[th.scene]}, ${th.cast.map(nameOf).join(' ')}, ${th.length} วิ (เปลี่ยนเองได้ในขั้นถัดไป)`;
+    $('idea').value = th.examples[0]; $('theme-desc').textContent = `${th.label}: ${th.desc} · ทำไมน่าทำ: ${th.why} · ตั้งให้แล้ว: ${LOOKS[th.look].label}, ${SCENE_TH[th.scene]}, ${th.cast.map(nameOf).join(' ')}, ${th.length} วิ (เปลี่ยนเองได้ในขั้นถัดไป)`;
     const ib = $('ideas'); ib.innerHTML = '';
     for (const ex of th.examples) { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = ex; b.addEventListener('click', () => { $('idea').value = ex; }); ib.appendChild(b); }
     $('hooks').innerHTML = ''; $('qa').hidden = true; $('extras').hidden = true; for (const n of ['hooks', 'story', 'qa', 'ideas']) note(n, '');
@@ -719,7 +792,17 @@ textarea.script { font: 14px/1.6 ui-monospace, "SFMono-Regular", Menlo, "Noto Sa
       b.append(cv, t, d); b.addEventListener('click', () => applyTheme(th.id)); box.appendChild(b);
     }
   }
-  buildThemes(); applyTheme('tale');
+  state.cat = 'all';
+  for (const ct of CATS) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = ct.id;
+    b.innerHTML = ct.label + `<small>${ct.id === 'all' ? THEMES.length : THEMES.filter((t) => t.cat === ct.id).length}</small>`;
+    b.addEventListener('click', () => { state.cat = ct.id; filterThemes(); }); $('cats').appendChild(b);
+  }
+  function filterThemes() {
+    for (const b of $('cats').children) b.setAttribute('aria-pressed', String(b.dataset.id === state.cat));
+    for (const b of $('themes').children) b.hidden = state.cat !== 'all' && THEMES.find((t) => t.id === b.dataset.id).cat !== state.cat;
+  }
+  buildThemes(); filterThemes(); applyTheme('tale');
   $('script').addEventListener('input', () => { state.scriptAuto = false; });
   $('apply-script').addEventListener('click', () => showStory('mine'));
   $('undo-script').addEventListener('click', () => { if (state.prevScript == null) return; const cur = $('script').value; $('script').value = state.prevScript; state.prevScript = cur; showStory('mine'); });
