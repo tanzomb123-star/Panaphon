@@ -1,23 +1,36 @@
 # Code Video Engine
 
-เอนจินสร้างคลิปสั้นด้วยโค้ดล้วน (ถอดแนวคิดจากโฆษณา "OOSKILL Video Engine" แล้วเขียนเองใหม่ทั้งหมด)
+เอนจินสร้างคลิปสั้นด้วยโค้ดล้วน: ตัวละคร ฉาก และแอนิเมชันวาดด้วย Canvas เป็นฟังก์ชันของเวลา `t` (เฟรมเดิมได้ภาพเดิมเสมอ)
 
-| ฟีเจอร์ในโฆษณา | วิธีทำในโปรเจกต์นี้ |
+## โครงสร้าง
+| ไฟล์ | หน้าที่ |
 |---|---|
-| วาดด้วยโค้ดทั้งหมด | `engine/stage.js` วาดตัวละคร/ฉากด้วย Canvas 2D เป็นฟังก์ชันของเวลา `t` (เฟรมเดิมได้ผลเดิมเสมอ → ไม่กระพริบ ตัวละครหน้าเดิมทุกช็อต) |
-| หลายสไตล์ | `STYLES` ใน `stage.js` (storybook / sunset / night) สลับด้วย `--style` |
-| ตัวละครไม่โดนตัดขอบ | ทุกช็อตกำหนดกล่อง `cam` ที่ต้องมองเห็น กล้องซูมให้พอดีทุกสัดส่วนจอ + `window.qa(t)` ตรวจ bounding box ทุก 1/4 วินาที (render จบด้วย exit code 2 ถ้าตัดขอบ) |
-| 9:16 / 16:9 / 1:1 | `--aspect` |
-| เสียงพากย์ไทย | `engine/voice.cjs` ElevenLabs TTS ต่อช็อต ความยาวช็อตปรับตามเสียงอัตโนมัติ |
-| ฟังเสียงกลับมาตรวจ | `voice.cjs` ถอดเสียงด้วย scribe_v1 แล้วให้คะแนนความเหมือนต่อช็อต (ต้องใช้คีย์ที่มีสิทธิ์ speech_to_text) |
-| หัวข้อเดียว → หาข้อมูล+เขียนบท | ยังไม่ทำ: เป็นขั้น LLM ที่สร้าง `stories/*.json` (ดูรูปแบบใน `stories/rabbit-tortoise.json`) |
-| ลอกสไตล์คลิปอื่นพร้อมคะแนนความเหมือน | ยังไม่ทำ |
+| `engine/characters.js` | คลังตัวละคร 10 ตัว + ท่า 9 ท่า (ข้อมูลล้วน) |
+| `engine/rig.js` | ตัวแปลข้อมูลตัวละครเป็นภาพ (template `critter`, `shell`) |
+| `engine/styles.js` | 10 สไตล์: storybook, sunset, night, winter, desert, beach, forest, city, candy, mono |
+| `engine/props.js` | ฉากประกอบ: tree, finish, rock, sign, house |
+| `engine/stage.js` | วาดฉาก กล้อง ซับไตเติลไทย และ `qa(t)` |
+| `engine/schema.cjs` | ตรวจไฟล์ story ก่อนเรนเดอร์ (`node engine/schema.cjs stories/x.json`) |
+| `engine/qa.cjs` | ตรวจจอดำ ภาพค้าง เสียงยาวเกินช็อต |
+| `engine/render.cjs` | ตรวจ → QA → เรนเดอร์ขนานหลาย worker → รวมไฟล์ + เสียง |
+| `engine/voice.cjs` | พากย์ไทย ElevenLabs + ถอดเสียงกลับมาตรวจ |
+| `engine/sheet.cjs` | ภาพรวมตัวละคร / สไตล์ |
 
 ## ใช้งาน
 ```bash
-node engine/voice.cjs --story stories/rabbit-tortoise.json            # สร้าง build/narration.mp3 + timeline.json
-node engine/render.cjs --aspect 9:16 --short 720 --fps 24 \
-  --timeline build/timeline.json --audio build/narration.mp3 --out out/clip.mp4
+npm install
+npm test                                              # 24 เทสต์ (schema, rig, QA, golden frames, render)
+node engine/voice.cjs --story stories/rabbit-tortoise.json
+node engine/render.cjs --story stories/rabbit-tortoise.json --aspect 9:16 --style night \
+  --timeline build/timeline.json --audio build/narration.mp3
+node engine/sheet.cjs characters out/characters.png
+UPDATE_GOLDEN=1 npm test                              # หลังตั้งใจเปลี่ยนหน้าตา ให้บันทึกภาพอ้างอิงใหม่
 ```
-ต้องมี Node 22, ffmpeg, playwright (chromium) และฟอนต์ไทย (Loma/Noto Sans Thai).
-เรนเดอร์แบบเงียบได้โดยไม่ต้องใช้ `voice.cjs`.
+Exit code ของ render: `0` ผ่าน, `1` story ผิดรูปแบบ, `2` QA ไม่ผ่าน (ดูรายละเอียดใน `out/*.qa.json`)
+
+## รูปแบบ story
+ดู `stories/rabbit-tortoise.json` และ `stories/showcase.json`: แต่ละช็อตมี `dur`, `text` (ซับ/พากย์), `cam` = `[t, cx, cy, w, h]` (กรอบที่ต้องเห็นเสมอ),
+`actors` = `{ id: { character?, x, pose, facing? } }` ค่า `x`/`pose` เป็นค่าเดียวหรือ keyframe `[[t, v], ...]`
+
+## ข้อกำหนดเครื่อง
+Node 22, ffmpeg, Playwright Chromium, ฟอนต์ไทย (Loma / Noto Sans Thai)

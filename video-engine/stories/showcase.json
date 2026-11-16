@@ -1,0 +1,25 @@
+{
+  "title": "เพื่อนในป่า",
+  "style": "storybook",
+  "props": [{ "type": "house", "x": -300 }, { "type": "sign", "x": 380, "text": "ป่าแห่งความสุข" }, { "type": "rock", "x": 620 }],
+  "shots": [
+    {
+      "id": "intro", "dur": 4, "title": "เพื่อนในป่า",
+      "text": "สัตว์ทุกตัวในป่ามารวมตัวกันที่ลานกว้าง",
+      "cam": [[0, 150, -110, 1150, 560]],
+      "actors": {
+        "cat": { "x": -320, "pose": "walk" }, "dog": { "x": -120, "pose": "happy" }, "fox": { "x": 70, "pose": "talk" },
+        "pig": { "x": 260, "pose": "idle", "facing": -1 }, "frog": { "x": 470, "pose": "hop", "facing": -1 }
+      }
+    },
+    {
+      "id": "crowd", "dur": 4,
+      "text": "หมี แพนด้า และหนูน้อย ก็มาร่วมด้วย",
+      "cam": [[0, 150, -110, 1000, 520], [4, 200, -110, 1100, 560]],
+      "actors": {
+        "bear": { "x": -200, "pose": [[0, "idle"], [2, "happy"]] }, "panda": { "x": 40, "pose": "talk" },
+        "mouse": { "x": 260, "pose": [[0, "shock"], [2.5, "happy"]], "facing": -1 }, "rabbit": { "x": 470, "pose": "sad", "facing": -1 }
+      }
+    }
+  ]
+}

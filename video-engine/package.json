@@ -1,0 +1,15 @@
+{
+  "name": "code-video-engine",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.cjs",
+    "render": "node engine/render.cjs",
+    "voice": "node engine/voice.cjs"
+  },
+  "dependencies": {
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
+    "zod": "^3.23.8"
+  }
+}
