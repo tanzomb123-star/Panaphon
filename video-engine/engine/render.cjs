@@ -45,7 +45,7 @@ async function runQA(page, total, W, H, step = 0.25) {
   return { errors, report: { cropped, overflow: [...overflow], black, frozen } };
 }
 
-async function renderSegment(browser, cfg, W, H, fps, from, to, file) {
+async function renderSegment(browser, cfg, W, H, fps, from, to, file, tick) {
   const { page } = await openStage(browser, W, H, cfg);
   // -c:v mjpeg: tell ffmpeg the pipe holds JPEGs; probing a tiny all-black first frame (fade-in) can fail otherwise
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(fps), '-i', '-', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-r', String(fps), file], { stdio: ['pipe', 'inherit', 'inherit'] });
@@ -56,6 +56,7 @@ async function renderSegment(browser, cfg, W, H, fps, from, to, file) {
     await page.evaluate((t) => window.draw(t), f / fps);
     const buf = await page.screenshot({ type: 'jpeg', quality: 93 });
     if (!ff.stdin.write(buf)) await Promise.race([new Promise((r) => ff.stdin.once('drain', r)), done]);
+    if (tick) tick();
   }
   ff.stdin.end(); const code = await done; await page.close(); if (code) throw new Error('ffmpeg segment failed ' + file);
 }
@@ -65,28 +66,33 @@ async function render(o) {
   const { W, H } = dims(o.aspect, o.short), fps = o.fps;
   const durs = o.timeline && fs.existsSync(o.timeline) ? JSON.parse(fs.readFileSync(o.timeline, 'utf8')).durs : [];
   const cfg = { W, H, story: o.story, style: o.style, durs };
-  const browser = await chromium.launch();
+  // progress: QA 0-10%, frames 10-95%, concat/mux 95-100%; values only ever increase
+  let last = 0; const report = (v) => { if (o.onProgress && v > last) { last = v; o.onProgress(+v.toFixed(3)); } };
+  const browser = await chromium.launch(); let tmp = null;
   try {
     const { page, total } = await openStage(browser, W, H, cfg);
     const q = o.qa === false ? { errors: [], report: {} } : await runQA(page, total, W, H);
+    report(0.1);
     const vrep = path.join(path.dirname(o.timeline || ''), 'voice-report.json');
     if (o.timeline && fs.existsSync(vrep)) q.errors.push(...qa.checkTimeline(JSON.parse(fs.readFileSync(vrep, 'utf8')), durs.length ? durs : o.story.shots.map((s) => s.dur)));
     await page.close();
     if (q.errors.length && o.failOnQA) return { code: 2, errors: q.errors, qa: q.report };
     const frames = Math.round(total * fps), workers = Math.max(1, Math.min(o.workers, frames));
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cve-')), segs = [];
-    const per = Math.ceil(frames / workers), jobs = [];
-    for (let k = 0; k < workers; k++) { const from = k * per, to = Math.min(frames, from + per); if (from >= to) break; const f = path.join(tmp, `seg-${k}.mp4`); segs.push(f); jobs.push(renderSegment(browser, cfg, W, H, fps, from, to, f)); }
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cve-')); const segs = [];
+    const per = Math.ceil(frames / workers), jobs = []; let doneFrames = 0;
+    const tick = () => { doneFrames++; if (doneFrames % 6 === 0 || doneFrames === frames) report(0.1 + 0.85 * doneFrames / frames); };
+    for (let k = 0; k < workers; k++) { const from = k * per, to = Math.min(frames, from + per); if (from >= to) break; const f = path.join(tmp, `seg-${k}.mp4`); segs.push(f); jobs.push(renderSegment(browser, cfg, W, H, fps, from, to, f, tick)); }
     await Promise.all(jobs);
     fs.writeFileSync(path.join(tmp, 'list.txt'), segs.map((s) => `file '${s}'`).join('\n'));
     fs.mkdirSync(path.dirname(o.out), { recursive: true });
     const args = ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', path.join(tmp, 'list.txt')];
     if (o.audio && fs.existsSync(o.audio)) args.push('-i', o.audio, '-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '160k');
     args.push('-c:v', 'copy', '-t', String(frames / fps), o.out);
-    execFileSync('ffmpeg', args); fs.rmSync(tmp, { recursive: true, force: true });
+    execFileSync('ffmpeg', args);
     fs.writeFileSync(o.out.replace(/\.mp4$/, '') + '.qa.json', JSON.stringify({ errors: q.errors, ...q.report }, null, 2));
+    report(1);
     return { code: q.errors.length ? 2 : 0, out: o.out, W, H, fps, seconds: frames / fps, frames, workers: segs.length, errors: q.errors };
-  } finally { await browser.close(); }
+  } finally { await browser.close(); if (tmp) fs.rmSync(tmp, { recursive: true, force: true }); }
 }
 
 module.exports = { render, dims };

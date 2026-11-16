@@ -12,6 +12,14 @@ for (const workers of [3, 5]) test(`parallel render with ${workers} workers keep
   assert.strictEqual(+p.streams[0].nb_read_frames, 72);
   assert.ok(Math.abs(+p.format.duration - 3) < 0.05, p.format.duration);
 });
+test('progress callback rises monotonically to 1', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'rt-')), 'p.mp4'); const seen = [];
+  const r = await render({ story, aspect: '1:1', short: 160, fps: 24, workers: 3, out, failOnQA: true, onProgress: (v) => seen.push(v) });
+  assert.strictEqual(r.code, 0);
+  assert.ok(seen.length >= 3, JSON.stringify(seen));
+  for (let i = 1; i < seen.length; i++) assert.ok(seen[i] > seen[i - 1], JSON.stringify(seen));
+  assert.strictEqual(seen[seen.length - 1], 1);
+});
 test('invalid story exits with code 1 before rendering', async () => {
   const bad = JSON.parse(JSON.stringify(story)); bad.shots[0].actors.cat.pose = 'fly';
   const r = await render({ story: bad, aspect: '1:1', short: 160, fps: 24, workers: 1, out: '/nonexistent/x.mp4', failOnQA: true });
